@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+checkpoints/
+checkpoints_optuna_phase1/
+optuna_accident.db
