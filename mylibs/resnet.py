@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+from torchvision.models import resnet18 as tv_resnet18
+from torchvision.models import ResNet18_Weights
 
 
 def conv3x3(in_planes, out_planes, stride=1):
@@ -102,5 +104,19 @@ class ResNet(nn.Module):
         return x
 
 
-def resnet18(num_classes=1000):
-    return ResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes)
+def resnet18(num_classes=1000, pretrained=False):
+    model = ResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes)
+
+    if pretrained:
+        tv_model = tv_resnet18(weights=ResNet18_Weights.DEFAULT)
+        state_dict = tv_model.state_dict()
+
+        # Si num_classes != 1000, quitamos la fc
+        if num_classes != 1000:
+            state_dict.pop("fc.weight", None)
+            state_dict.pop("fc.bias", None)
+            model.load_state_dict(state_dict, strict=False)
+        else:
+            model.load_state_dict(state_dict)
+
+    return model
