@@ -83,7 +83,7 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward_features(self, x):
+    def forward_feature_map(self, x):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -92,8 +92,11 @@ class ResNet(nn.Module):
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
-        x = self.layer4(x)
+        x = self.layer4(x)   # [B, 512, 7, 7] aprox para 224x224
+        return x
 
+    def forward_features(self, x):
+        x = self.forward_feature_map(x)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         return x
@@ -111,7 +114,6 @@ def resnet18(num_classes=1000, pretrained=False):
         tv_model = tv_resnet18(weights=ResNet18_Weights.DEFAULT)
         state_dict = tv_model.state_dict()
 
-        # Si num_classes != 1000, quitamos la fc
         if num_classes != 1000:
             state_dict.pop("fc.weight", None)
             state_dict.pop("fc.bias", None)
