@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 
-
 def conv3x3(in_planes, out_planes, stride=1):
     return nn.Conv2d(
         in_planes, out_planes,
@@ -31,11 +30,9 @@ class BasicBlock(nn.Module):
 
     def forward(self, x):
         identity = x
-
         out = self.conv1(x)
         out = self.bn1(out)
         out = self.relu(out)
-
         out = self.conv2(out)
         out = self.bn2(out)
 
@@ -51,7 +48,6 @@ class ResNet(nn.Module):
     def __init__(self, block, layers, num_classes=1000):
         super().__init__()
         self.inplanes = 64
-
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
@@ -75,7 +71,6 @@ class ResNet(nn.Module):
 
         layers = [block(self.inplanes, planes, stride, downsample)]
         self.inplanes = planes * block.expansion
-
         for _ in range(1, blocks):
             layers.append(block(self.inplanes, planes))
 
@@ -86,12 +81,10 @@ class ResNet(nn.Module):
         x = self.bn1(x)
         x = self.relu(x)
         x = self.maxpool(x)
-
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         return x
@@ -102,5 +95,17 @@ class ResNet(nn.Module):
         return x
 
 
-def resnet18(num_classes=1000):
-    return ResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes)
+def resnet18(num_classes=1000, pretrained=False):
+    model = ResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes)
+
+    if pretrained:
+        state_dict = torch.hub.load_state_dict_from_url(
+            'https://download.pytorch.org/models/resnet18-f37072fd.pth',
+            map_location='cpu',
+            progress=True
+        )
+        # Eliminamos las capas fc del pretrained
+        state_dict = {k: v for k, v in state_dict.items() if not k.startswith('fc.')}
+        model.load_state_dict(state_dict, strict=False)
+
+    return model

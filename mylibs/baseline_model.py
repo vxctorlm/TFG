@@ -79,7 +79,7 @@ class BaselineResNetTransformer(nn.Module):
       super().__init__()
 
       # Backbone espacial
-      self.backbone = resnet18(num_classes=1000)
+      self.backbone = resnet18(num_classes=1000, pretrained=True)
 
       # Proyección de 512 -> d_model con normalización, activación y dropout
       self.proj = nn.Sequential(
