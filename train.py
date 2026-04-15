@@ -259,7 +259,12 @@ def main():
     ).to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    optimizer = torch.optim.Adam([
+        {"params": model.backbone.parameters(), "lr": 1e-6},
+        {"params": model.proj.parameters(), "lr": 8e-5},
+        {"params": model.transformer.parameters(), "lr": 8e-5},
+        {"params": model.classifier.parameters(), "lr": 8e-5},
+    ], weight_decay=2e-4)
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
