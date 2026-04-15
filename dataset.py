@@ -1,7 +1,6 @@
 from pathlib import Path
 import numpy as np
 from PIL import Image
-
 import torch
 from torch.utils.data import Dataset
 from torchvision import tv_tensors
@@ -22,36 +21,34 @@ class AccidentClipDataset(Dataset):
         anticipation_mode=False,
         anticipation_offset=1,
         drop_invalid_samples=True,
+        
+        temporal_augmentation_factor: int = 1,   # ← 1 = sin multiplicar
     ):
         self.txt_path = Path(txt_path)
         self.rgb_root = Path(rgb_root)
         self.num_frames = num_frames
         self.transform = transform
-
         self.train = train
         self.use_temporal_augmentation = use_temporal_augmentation
         self.temporal_max_jitter = temporal_max_jitter
         self.use_toa_guided_sampling = use_toa_guided_sampling
         self.toa_center_strength = toa_center_strength
-
         self.anticipation_mode = anticipation_mode
         self.anticipation_offset = anticipation_offset
         self.drop_invalid_samples = drop_invalid_samples
+        self.temporal_augmentation_factor = temporal_augmentation_factor
 
         self.samples = self._load_samples()
 
     def _load_samples(self):
         samples = []
-
         with open(self.txt_path, "r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if not line:
                     continue
-
                 left, text = line.split(",", 1)
                 parts = left.split()
-
                 sample = {
                     "video_id": parts[0],
                     "label": int(parts[1]),
@@ -61,7 +58,6 @@ class AccidentClipDataset(Dataset):
                     "text": text.strip(),
                 }
 
-                # Si estamos en anticipación, redefinimos el final efectivo
                 if self.anticipation_mode and sample["label"] == 1:
                     effective_end = min(sample["end"], sample["toa"] - self.anticipation_offset)
                 else:
@@ -69,11 +65,19 @@ class AccidentClipDataset(Dataset):
 
                 sample["effective_end"] = effective_end
 
-                # Filtrar muestras inválidas
                 if self.drop_invalid_samples and effective_end < sample["start"]:
                     continue
 
                 samples.append(sample)
+
+        # ==================== NUEVO: MULTIPLICAR MUESTRAS ====================
+        if self.train and self.temporal_augmentation_factor > 1:
+            augmented_samples = []
+            for sample in samples:
+                for _ in range(self.temporal_augmentation_factor):
+                    augmented_samples.append(sample.copy())   # cada copia tendrá jitter distinto
+            samples = augmented_samples
+            print(f"→ Dataset train multiplicado ×{self.temporal_augmentation_factor} → {len(samples)} clips")
 
         return samples
 

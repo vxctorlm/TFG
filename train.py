@@ -127,7 +127,7 @@ def main():
     # Hiperparámetros
     batch_size = 4
     num_epochs = 100
-d    learning_rate = 0.0001367409668126798
+    learning_rate = 0.0001367409668126798
     weight_decay = 2.7548330690998522e-05
     num_frames = 16
 
@@ -151,7 +151,7 @@ d    learning_rate = 0.0001367409668126798
     best_val_ap_for_stop = -1.0
     early_stop_counter = 0
 
-    temporal_max_jitter = 2
+    temporal_max_jitter = 4
     toa_center_strength = 0.6235186584926907
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -217,6 +217,7 @@ d    learning_rate = 0.0001367409668126798
         temporal_max_jitter=temporal_max_jitter,
         use_toa_guided_sampling=True,
         toa_center_strength=toa_center_strength,
+        temporal_augmentation_factor=3, # 3 o 4
     )
 
     val_dataset = AccidentClipDataset(
