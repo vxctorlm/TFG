@@ -127,8 +127,8 @@ def main():
     # Hiperparámetros
     batch_size = 4
     num_epochs = 100
-    learning_rate = 8.4e-05
-    weight_decay = 2e-4
+d    learning_rate = 0.0001367409668126798
+    weight_decay = 2.7548330690998522e-05
     num_frames = 16
 
     # Configuración de augmentación
@@ -142,8 +142,8 @@ def main():
     use_temporal_augmentation = True
 
     # Modelo
-    num_transformer_layers = 1
-    dropout = 0.35
+    num_transformer_layers = 3
+    dropout = 0.1819545611579298
 
     # Early stopping
     patience = 6
@@ -152,7 +152,7 @@ def main():
     early_stop_counter = 0
 
     temporal_max_jitter = 2
-    toa_center_strength = 0.45
+    toa_center_strength = 0.6235186584926907
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     frames_tag = "allf" if num_frames is None else f"{num_frames}f"
