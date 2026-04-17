@@ -10,7 +10,7 @@ from datetime import datetime
 from sklearn.metrics import accuracy_score, f1_score, average_precision_score, roc_auc_score
 
 from model.dataset import AccidentClipDataset
-from model.mylibs.baseline_modelGRU import BaselineResNetGRUSimple
+from model.mylibs.baseline_modelGRU import BaselineResNetGRU
 
 
 def set_seed(seed: int = 42):
@@ -20,9 +20,6 @@ def set_seed(seed: int = 42):
 
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
-
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
 
 
 @torch.no_grad()
@@ -53,16 +50,8 @@ def evaluate(model, dataloader, criterion, device):
     val_loss = running_loss / len(dataloader)
     val_acc = accuracy_score(all_labels, all_preds)
     val_f1 = f1_score(all_labels, all_preds, zero_division=0)
-
-    try:
-        val_ap = average_precision_score(all_labels, all_scores)
-    except ValueError:
-        val_ap = float("nan")
-
-    try:
-        val_auc = roc_auc_score(all_labels, all_scores)
-    except ValueError:
-        val_auc = float("nan")
+    val_ap = average_precision_score(all_labels, all_scores)
+    val_auc = roc_auc_score(all_labels, all_scores)
 
     return val_loss, val_acc, val_f1, val_ap, val_auc
 
@@ -135,53 +124,79 @@ def main():
     else:
         print("Using CPU")
 
-    # Hiperparámetros
-    batch_size = 4
+    # ── Hiperparámetros ────────────────────────────────────────────────────────
+    batch_size = 8
     num_epochs = 100
-    learning_rate = 1.5199348301309802e-05
-    weight_decay = 2.3270677083837777e-05
-    num_frames = 8
+    weight_decay = 1e-4
+    num_frames = 16
 
-    # Augmentación visual
+    # ── Backbone ───────────────────────────────────────────────────────────────
+    # Configuración v5: backbone completamente congelado.
+    # Las corridas con unfreeze_layer4 empeoraron val_ap (0.632 vs 0.637)
+    # porque layer4 se especializa en los 2282 ejemplos de train incluso
+    # con lr=2e-6. Cuello de botella es tamaño del dataset, no capacidad.
+    pretrained = True
+    freeze_early = False
+    freeze_all = True
+    unfreeze_layer4 = False
+
+    learning_rate = 2e-5        # proj + GRU + classifier
+
+    # ── Augmentación espacial ─────────────────────────────────────────────────
     enable_augmentation = True
     use_hflip = True
     use_color_jitter = True
-    use_random_resized_crop = True
+    use_random_resized_crop = False
     use_gaussian_blur = False
 
-    # Augmentación temporal
+    # ── Augmentación temporal ─────────────────────────────────────────────────
     use_temporal_augmentation = True
-    temporal_max_jitter = 1
-    use_toa_guided_sampling = True
-    toa_center_strength = 0.3056937753654446
+    temporal_max_jitter = 2
+    # Bajado de 0.62 a 0.3: con 0.62 se introduce un sesgo en train
+    # (frames centrados en el TOA) que no existe en val (muestreo uniforme).
+    toa_center_strength = 0.3
 
-    # Anticipación real
-    anticipation_mode = True
-    anticipation_offset = 5
-
-    # Modelo GRU simple
+    # ── Modelo ────────────────────────────────────────────────────────────────
+    gru_num_layers = 1      # Vuelve a 1: con backbone congelado necesitamos más capacidad en GRU
     d_model = 256
-    hidden_size = 64
-    num_gru_layers = 1
+    dropout = 0.35
     bidirectional = False
-    dropout = 0.32606056073988443
 
-    # Early stopping
-    patience = 5
-    min_delta = 0.0015
+    # ── MixUp temporal ────────────────────────────────────────────────────────
+    # Mezcla dos clips del mismo batch ponderadamente. Obliga al modelo
+    # a generalizar mejor creando ejemplos sinteticos intermedios entre clases.
+    # Util en datasets pequeños como este (2282 samples).
+    use_mixup = True
+    mixup_alpha = 0.2       # Beta(alpha, alpha): alpha bajo = mezclas suaves
+    mixup_prob = 0.5        # Probabilidad de aplicar mixup a cada batch
+
+    # ── Label smoothing ───────────────────────────────────────────────────────
+    # Penaliza predicciones con prob > 0.9. Evita que val_loss se dispare
+    # desde epoch 0 por logits sobreconfiados.
+    label_smoothing = 0.1
+
+    # ── Early stopping ────────────────────────────────────────────────────────
+    patience = 8            # Subido a 5: con backbone congelado el aprendizaje es más lento
+    min_delta = 0.001
     best_val_ap_for_stop = -1.0
     early_stop_counter = 0
 
+    # ── Run name ──────────────────────────────────────────────────────────────
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     frames_tag = "allf" if num_frames is None else f"{num_frames}f"
     run_name = (
-        f"baseline_gru_simple_{timestamp}_{frames_tag}"
-        f"_anticip{int(anticipation_mode)}"
-        f"_off{anticipation_offset}"
+        f"gru_v7_{timestamp}_{frames_tag}_seed{seed}"
+        f"_freezeAll{int(freeze_all)}"
         f"_augTemp{int(use_temporal_augmentation)}"
-        f"_tjit{temporal_max_jitter}"
-        f"_wd{weight_decay:.1e}"
-        f"_do{dropout:.2f}"
+        f"_aug{int(enable_augmentation)}"
+        f"_cj{int(use_color_jitter)}"
+        f"_flip{int(use_hflip)}"
+        f"_dm{d_model}"
+        f"_gru{gru_num_layers}"
+        f"_bi{int(bidirectional)}"
+        f"_ls{int(label_smoothing * 10)}"
+        f"_meanpool"
+        f"_mixup{int(use_mixup)}a{int(mixup_alpha*10)}p{int(mixup_prob*10)}"
     )
     print("Run name:", run_name)
 
@@ -195,30 +210,32 @@ def main():
             "learning_rate": learning_rate,
             "weight_decay": weight_decay,
             "num_frames": num_frames,
-            "model": "ResNet18 + BiGRU + Mean Pooling",
+            "model": "ResNet18 (pretrained, frozen) + Temporal GRU",
+            "pooling": "mean",
             "d_model": d_model,
-            "hidden_size": hidden_size,
-            "num_gru_layers": num_gru_layers,
+            "gru_num_layers": gru_num_layers,
             "bidirectional": bidirectional,
+            "pretrained": pretrained,
+            "freeze_early": freeze_early,
+            "freeze_all": freeze_all,
             "dropout": dropout,
+            "label_smoothing": label_smoothing,
             "patience": patience,
             "min_delta": min_delta,
             "stop_metric": "val_ap",
             "scheduler_metric": "val_ap",
+            "use_mixup": use_mixup,
+            "mixup_alpha": mixup_alpha,
+            "mixup_prob": mixup_prob,
             "enable_augmentation": enable_augmentation,
             "use_hflip": use_hflip,
             "use_color_jitter": use_color_jitter,
             "use_random_resized_crop": use_random_resized_crop,
             "use_gaussian_blur": use_gaussian_blur,
-            "use_temporal_augmentation": use_temporal_augmentation,
-            "temporal_max_jitter": temporal_max_jitter,
-            "use_toa_guided_sampling": use_toa_guided_sampling,
-            "toa_center_strength": toa_center_strength,
-            "anticipation_mode": anticipation_mode,
-            "anticipation_offset": anticipation_offset,
         }
     )
 
+    # ── Transforms ───────────────────────────────────────────────────────────
     train_transform = build_clip_transform(
         train=True,
         image_size=(224, 224),
@@ -235,6 +252,7 @@ def main():
         enable_augmentation=False,
     )
 
+    # ── Datasets ──────────────────────────────────────────────────────────────
     train_dataset = AccidentClipDataset(
         txt_path="/data-fast/data-server/vlopezmo/model/training/training_train.txt",
         rgb_root="/data-fast/data-server/vlopezmo/DADA2000",
@@ -243,10 +261,8 @@ def main():
         train=True,
         use_temporal_augmentation=use_temporal_augmentation,
         temporal_max_jitter=temporal_max_jitter,
-        use_toa_guided_sampling=use_toa_guided_sampling,
+        use_toa_guided_sampling=True,
         toa_center_strength=toa_center_strength,
-        anticipation_mode=anticipation_mode,
-        anticipation_offset=anticipation_offset,
     )
 
     val_dataset = AccidentClipDataset(
@@ -256,13 +272,33 @@ def main():
         transform=val_transform,
         train=False,
         use_temporal_augmentation=False,
-        anticipation_mode=anticipation_mode,
-        anticipation_offset=anticipation_offset,
     )
 
     print("Número de muestras de train:", len(train_dataset))
     print("Número de muestras de val:", len(val_dataset))
 
+    # ── Diagnóstico de distribución de clases ─────────────────────────────────
+    labels_train = [s["label"] for s in train_dataset.samples]
+    labels_val   = [s["label"] for s in val_dataset.samples]
+    n_tr, n_va   = len(labels_train), len(labels_val)
+    pos_tr, pos_va = sum(labels_train), sum(labels_val)
+    print(f"Train: {pos_tr} acc ({100*pos_tr/n_tr:.1f}%) | "
+          f"{n_tr-pos_tr} no-acc ({100*(n_tr-pos_tr)/n_tr:.1f}%)")
+    print(f"Val:   {pos_va} acc ({100*pos_va/n_va:.1f}%) | "
+          f"{n_va-pos_va} no-acc ({100*(n_va-pos_va)/n_va:.1f}%)")
+    diff = abs(pos_tr/n_tr - pos_va/n_va) * 100
+    if diff > 10:
+        print(f"Diferencia de distribucion entre splits: {diff:.1f}pp")
+    else:
+        print(f"Distribucion similar entre splits (diff={diff:.1f}pp)")
+
+    # Distribucion 53/47 — no se necesitan pesos de clase.
+    # Con distribucion casi balanceada los pesos introducen inestabilidad
+    # sin aportar beneficio (causaron colapso de val_f1 a 0.20 en epoch 3).
+    class_weights = None
+    print("Class weights: desactivados (distribucion balanceada)")
+
+    # ── DataLoaders ───────────────────────────────────────────────────────────
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
@@ -281,19 +317,29 @@ def main():
         persistent_workers=True,
     )
 
-    model = BaselineResNetGRUSimple(
+    # ── Modelo ────────────────────────────────────────────────────────────────
+    model = BaselineResNetGRU(
         num_classes=2,
         d_model=d_model,
-        hidden_size=hidden_size,
-        num_gru_layers=num_gru_layers,
-        bidirectional=bidirectional,
+        num_layers=gru_num_layers,
         dropout=dropout,
+        pretrained=pretrained,
+        freeze_early=freeze_early,
+        freeze_all=freeze_all,
+        bidirectional=bidirectional,
     ).to(device)
 
-    criterion = nn.CrossEntropyLoss()
+    # FIX: dos criterios separados.
+    # criterion_train: label_smoothing + pesos de clase para el loop de entrenamiento.
+    # criterion_val:   sin label_smoothing para que val_loss sea comparable con
+    #                  train_loss y no este artificialmente inflada.
+    #                  Con label_smoothing incluso una prediccion perfecta tiene loss > 0.
+    criterion_train = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
+    criterion_val   = nn.CrossEntropyLoss()
 
-    optimizer = torch.optim.Adam(
-        model.parameters(),
+    # Solo optimizamos parametros entrenables (backbone congelado excluido)
+    optimizer = torch.optim.AdamW(
+        filter(lambda p: p.requires_grad, model.parameters()),
         lr=learning_rate,
         weight_decay=weight_decay,
     )
@@ -302,7 +348,7 @@ def main():
         optimizer,
         mode="max",
         factor=0.5,
-        patience=2,
+        patience=3,
     )
 
     ckpt_dir = "/data-fast/data-server/vlopezmo/model/checkpoints"
@@ -322,15 +368,41 @@ def main():
             clips = clips.to(device, non_blocking=True)
             labels = labels.to(device, non_blocking=True)
 
+            # MixUp temporal: con probabilidad mixup_prob, mezcla este batch
+            # con una permutacion de si mismo usando lambda ~ Beta(alpha, alpha).
+            # Reemplaza el batch original por la version mezclada.
+            apply_mixup = use_mixup and np.random.random() < mixup_prob
+            if apply_mixup:
+                lam = np.random.beta(mixup_alpha, mixup_alpha)
+                # Garantizar que lam no sea trivial (evita no-ops)
+                lam = max(lam, 1.0 - lam)
+                idx = torch.randperm(clips.size(0), device=device)
+                clips_mixed = lam * clips + (1.0 - lam) * clips[idx]
+                labels_a, labels_b = labels, labels[idx]
+            else:
+                clips_mixed = clips
+
             optimizer.zero_grad()
-            outputs = model(clips)
-            loss = criterion(outputs, labels)
+            outputs = model(clips_mixed)
+
+            if apply_mixup:
+                # Loss mixta: combinacion convexa de los dos targets
+                loss = lam * criterion_train(outputs, labels_a) \
+                     + (1.0 - lam) * criterion_train(outputs, labels_b)
+            else:
+                loss = criterion_train(outputs, labels)
+
             loss.backward()
+
+            # Gradient clipping: previene exploding gradients en RNNs
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+
             optimizer.step()
 
             running_loss += loss.item()
 
+            # Metricas de train: siempre sobre las labels originales (no mezcladas)
+            # para que el reporte sea coherente con la evaluacion.
             preds = torch.argmax(outputs, dim=1)
             probs = torch.softmax(outputs, dim=1)[:, 1]
 
@@ -348,19 +420,11 @@ def main():
         train_loss = running_loss / len(train_loader)
         train_acc = accuracy_score(all_train_labels, all_train_preds)
         train_f1 = f1_score(all_train_labels, all_train_preds, zero_division=0)
-
-        try:
-            train_ap = average_precision_score(all_train_labels, all_train_scores)
-        except ValueError:
-            train_ap = float("nan")
-
-        try:
-            train_auc = roc_auc_score(all_train_labels, all_train_scores)
-        except ValueError:
-            train_auc = float("nan")
+        train_ap = average_precision_score(all_train_labels, all_train_scores)
+        train_auc = roc_auc_score(all_train_labels, all_train_scores)
 
         val_loss, val_acc, val_f1, val_ap, val_auc = evaluate(
-            model, val_loader, criterion, device
+            model, val_loader, criterion_val, device
         )
 
         print(f"\nEpoch [{epoch+1}/{num_epochs}] completed")
@@ -374,11 +438,13 @@ def main():
         wandb.log({
             "epoch": epoch + 1,
             "lr": optimizer.param_groups[0]["lr"],
+
             "train_loss": train_loss,
             "train_acc": train_acc,
             "train_f1": train_f1,
             "train_ap": train_ap,
             "train_roc_auc": train_auc,
+
             "val_loss": val_loss,
             "val_acc": val_acc,
             "val_f1": val_f1,
@@ -393,6 +459,7 @@ def main():
         if new_lr != old_lr:
             print(f"Learning rate reducido: {old_lr:.2e} -> {new_lr:.2e}")
 
+        # Guardar mejor modelo según val_ap
         if val_ap > best_val_ap:
             best_val_ap = val_ap
             ckpt_path = os.path.join(ckpt_dir, f"{run_name}_best_val_ap.pt")
@@ -412,23 +479,27 @@ def main():
                 "train_auc": train_auc,
                 "val_loss": val_loss,
                 "num_frames": num_frames,
-                "learning_rate": learning_rate,
-                "weight_decay": weight_decay,
                 "dropout": dropout,
+                "label_smoothing": label_smoothing,
                 "d_model": d_model,
-                "hidden_size": hidden_size,
-                "num_gru_layers": num_gru_layers,
+                "gru_num_layers": gru_num_layers,
                 "bidirectional": bidirectional,
-                "use_temporal_augmentation": use_temporal_augmentation,
-                "temporal_max_jitter": temporal_max_jitter,
-                "use_toa_guided_sampling": use_toa_guided_sampling,
-                "toa_center_strength": toa_center_strength,
-                "anticipation_mode": anticipation_mode,
-                "anticipation_offset": anticipation_offset,
+                "pretrained": pretrained,
+                "freeze_early": freeze_early,
+                "freeze_all": freeze_all,
+                "use_mixup": use_mixup,
+            "mixup_alpha": mixup_alpha,
+            "mixup_prob": mixup_prob,
+            "enable_augmentation": enable_augmentation,
+                "use_hflip": use_hflip,
+                "use_color_jitter": use_color_jitter,
+                "use_random_resized_crop": use_random_resized_crop,
+                "use_gaussian_blur": use_gaussian_blur,
                 "seed": seed,
             }, ckpt_path)
             print(f"Nuevo mejor modelo guardado en: {ckpt_path}")
 
+        # Guardar último checkpoint
         last_ckpt_path = os.path.join(ckpt_dir, f"{run_name}_last.pt")
         torch.save({
             "epoch": epoch + 1,
@@ -446,22 +517,26 @@ def main():
             "train_auc": train_auc,
             "val_loss": val_loss,
             "num_frames": num_frames,
-            "learning_rate": learning_rate,
-            "weight_decay": weight_decay,
             "dropout": dropout,
+            "label_smoothing": label_smoothing,
             "d_model": d_model,
-            "hidden_size": hidden_size,
-            "num_gru_layers": num_gru_layers,
+            "gru_num_layers": gru_num_layers,
             "bidirectional": bidirectional,
-            "use_temporal_augmentation": use_temporal_augmentation,
-            "temporal_max_jitter": temporal_max_jitter,
-            "use_toa_guided_sampling": use_toa_guided_sampling,
-            "toa_center_strength": toa_center_strength,
-            "anticipation_mode": anticipation_mode,
-            "anticipation_offset": anticipation_offset,
+            "pretrained": pretrained,
+            "freeze_early": freeze_early,
+            "freeze_all": freeze_all,
+            "use_mixup": use_mixup,
+            "mixup_alpha": mixup_alpha,
+            "mixup_prob": mixup_prob,
+            "enable_augmentation": enable_augmentation,
+            "use_hflip": use_hflip,
+            "use_color_jitter": use_color_jitter,
+            "use_random_resized_crop": use_random_resized_crop,
+            "use_gaussian_blur": use_gaussian_blur,
             "seed": seed,
         }, last_ckpt_path)
 
+        # Early stopping según val_ap
         if val_ap > best_val_ap_for_stop + min_delta:
             best_val_ap_for_stop = val_ap
             early_stop_counter = 0

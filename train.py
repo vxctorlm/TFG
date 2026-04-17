@@ -10,7 +10,7 @@ from datetime import datetime
 from sklearn.metrics import accuracy_score, f1_score, average_precision_score, roc_auc_score
 
 from model.dataset import AccidentClipDataset
-from model.mylibs.baseline_model import BaselineResNetTransformer
+from model.mylibs.baseline_model import BaselineResNetGRU
 
 
 def set_seed(seed: int = 42):
@@ -124,46 +124,53 @@ def main():
     else:
         print("Using CPU")
 
-    # Hiperparámetros
-    batch_size = 4
+    # ── Hiperparámetros ────────────────────────────────────────────────────────
+    batch_size = 8
     num_epochs = 100
-d    learning_rate = 0.0001367409668126798
+    learning_rate = 0.0001367409668126798   # FIX: eliminada 'd' espuria
     weight_decay = 2.7548330690998522e-05
     num_frames = 16
 
-    # Configuración de augmentación
-    enable_augmentation = False
-    use_hflip = False
-    use_color_jitter = False
+    # ── Backbone ───────────────────────────────────────────────────────────────
+    pretrained = True       # Cargar pesos ImageNet
+    freeze_early = True     # Congelar conv1, bn1, layer1, layer2
+
+    # ── Augmentación espacial ─────────────────────────────────────────────────
+    # Activamos hflip y color jitter — seguros para dashcam footage.
+    # random_resized_crop y gaussian_blur permanecen desactivados
+    # para no distorsionar demasiado las escenas de tráfico.
+    enable_augmentation = True
+    use_hflip = True
+    use_color_jitter = True
     use_random_resized_crop = False
     use_gaussian_blur = False
 
-    # Configuración de augmentación temporal
+    # ── Augmentación temporal ─────────────────────────────────────────────────
     use_temporal_augmentation = True
-
-    # Modelo
-    num_transformer_layers = 3
-    dropout = 0.1819545611579298
-
-    # Early stopping
-    patience = 6
-    min_delta = 0.0013
-    best_val_ap_for_stop = -1.0
-    early_stop_counter = 0
-
     temporal_max_jitter = 2
     toa_center_strength = 0.6235186584926907
 
+    # ── Modelo ────────────────────────────────────────────────────────────────
+    num_transformer_layers = 2      # Bajado de 3 a 2 para reducir capacidad
+    dropout = 0.35                  # Subido de 0.18 a 0.35
+
+    # ── Early stopping ────────────────────────────────────────────────────────
+    patience = 4                    # Bajado de 6 a 4 — para antes del pico ~epoch 11
+    min_delta = 0.001
+    best_val_ap_for_stop = -1.0
+    early_stop_counter = 0
+
+    # ── Run name ──────────────────────────────────────────────────────────────
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     frames_tag = "allf" if num_frames is None else f"{num_frames}f"
     run_name = (
         f"baseline_{timestamp}_{frames_tag}"
+        f"_pretrained{int(pretrained)}"
+        f"_freezeEarly{int(freeze_early)}"
         f"_augTemp{int(use_temporal_augmentation)}"
         f"_aug{int(enable_augmentation)}"
         f"_cj{int(use_color_jitter)}"
         f"_flip{int(use_hflip)}"
-        f"_crop{int(use_random_resized_crop)}"
-        f"_blur{int(use_gaussian_blur)}"
     )
     print("Run name:", run_name)
 
@@ -176,7 +183,9 @@ d    learning_rate = 0.0001367409668126798
             "num_epochs": num_epochs,
             "learning_rate": learning_rate,
             "num_frames": num_frames,
-            "model": "ResNet18 + Temporal Transformer",
+            "model": "ResNet18 (pretrained) + Temporal Transformer",
+            "pretrained": pretrained,
+            "freeze_early": freeze_early,
             "num_transformer_layers": num_transformer_layers,
             "dropout": dropout,
             "patience": patience,
@@ -191,6 +200,7 @@ d    learning_rate = 0.0001367409668126798
         }
     )
 
+    # ── Transforms ───────────────────────────────────────────────────────────
     train_transform = build_clip_transform(
         train=True,
         image_size=(224, 224),
@@ -207,6 +217,7 @@ d    learning_rate = 0.0001367409668126798
         enable_augmentation=False,
     )
 
+    # ── Datasets ──────────────────────────────────────────────────────────────
     train_dataset = AccidentClipDataset(
         txt_path="/data-fast/data-server/vlopezmo/model/training/training_train.txt",
         rgb_root="/data-fast/data-server/vlopezmo/DADA2000",
@@ -231,6 +242,7 @@ d    learning_rate = 0.0001367409668126798
     print("Número de muestras de train:", len(train_dataset))
     print("Número de muestras de val:", len(val_dataset))
 
+    # ── DataLoaders ───────────────────────────────────────────────────────────
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
@@ -249,6 +261,7 @@ d    learning_rate = 0.0001367409668126798
         persistent_workers=True,
     )
 
+    # ── Modelo ────────────────────────────────────────────────────────────────
     model = BaselineResNetTransformer(
         num_classes=2,
         d_model=256,
@@ -256,16 +269,25 @@ d    learning_rate = 0.0001367409668126798
         num_layers=num_transformer_layers,
         dim_feedforward=512,
         dropout=dropout,
+        pretrained=pretrained,
+        freeze_early=freeze_early,
     ).to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+
+    # Solo optimizamos los parámetros que requieren gradiente
+    # (excluye las capas congeladas del backbone)
+    optimizer = torch.optim.AdamW(
+        filter(lambda p: p.requires_grad, model.parameters()),
+        lr=learning_rate,
+        weight_decay=weight_decay,
+    )
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
         mode="max",
         factor=0.5,
-        patience=2,
+        patience=3,
     )
 
     ckpt_dir = "/data-fast/data-server/vlopezmo/model/checkpoints"
@@ -289,6 +311,7 @@ d    learning_rate = 0.0001367409668126798
             outputs = model(clips)
             loss = criterion(outputs, labels)
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
 
             running_loss += loss.item()
@@ -310,7 +333,6 @@ d    learning_rate = 0.0001367409668126798
         train_loss = running_loss / len(train_loader)
         train_acc = accuracy_score(all_train_labels, all_train_preds)
         train_f1 = f1_score(all_train_labels, all_train_preds, zero_division=0)
-
         train_ap = average_precision_score(all_train_labels, all_train_scores)
         train_auc = roc_auc_score(all_train_labels, all_train_scores)
 
@@ -372,6 +394,8 @@ d    learning_rate = 0.0001367409668126798
                 "num_frames": num_frames,
                 "dropout": dropout,
                 "num_transformer_layers": num_transformer_layers,
+                "pretrained": pretrained,
+                "freeze_early": freeze_early,
                 "enable_augmentation": enable_augmentation,
                 "use_hflip": use_hflip,
                 "use_color_jitter": use_color_jitter,
@@ -401,6 +425,8 @@ d    learning_rate = 0.0001367409668126798
             "num_frames": num_frames,
             "dropout": dropout,
             "num_transformer_layers": num_transformer_layers,
+            "pretrained": pretrained,
+            "freeze_early": freeze_early,
             "enable_augmentation": enable_augmentation,
             "use_hflip": use_hflip,
             "use_color_jitter": use_color_jitter,
