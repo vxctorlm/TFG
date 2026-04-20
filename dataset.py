@@ -87,10 +87,15 @@ class AccidentClipDataset(Dataset):
         if total_len <= 0:
             raise ValueError(f"Intervalo inválido: start={start}, end={end}")
 
-        if self.num_frames is None or self.num_frames >= total_len:
+        # Si hay menos frames disponibles que num_frames, samplear CON REPETICIÓN
+        # para garantizar siempre la misma longitud de salida (necesario para batch).
+        if self.num_frames is not None and total_len < self.num_frames:
+            base_indices = np.linspace(start, end, self.num_frames)
+            return np.round(base_indices).astype(int)
+
+        if self.num_frames is None:
             return total_frames
 
-        # Muestreo base uniforme
         base_indices = np.linspace(start, end, self.num_frames)
 
         # Val/test: determinista, sin augmentation
@@ -98,10 +103,6 @@ class AccidentClipDataset(Dataset):
             return base_indices.astype(int)
 
         indices = base_indices.copy()
-
-        # FIX: orden corregido — primero jitter, luego TOA shift.
-        # Antes el orden era el inverso: el jitter deshacía parcialmente
-        # el guiado hacia el TOA. Ahora el TOA shift es la última palabra.
 
         # 1. Jitter temporal: añade variabilidad entre epochs
         if self.temporal_max_jitter > 0:
@@ -113,7 +114,6 @@ class AccidentClipDataset(Dataset):
             indices = indices + jitter
 
         # 2. TOA-guided shift: guía suavemente el centro hacia el momento del accidente.
-        # Se aplica después del jitter para que sea la operación dominante.
         if self.use_toa_guided_sampling:
             current_center = indices.mean()
             toa_clamped = min(max(toa, start), end)
@@ -125,9 +125,7 @@ class AccidentClipDataset(Dataset):
         indices = np.sort(indices)
         indices = indices.astype(int)
 
-        # FIX: eliminar duplicados — tras clip+sort pueden aparecer frames repetidos
-        # (varios índices apuntando al mismo frame), especialmente en los bordes del clip.
-        # Interpolamos para mantener siempre exactamente num_frames frames.
+        # Eliminar duplicados. tras clip+sort pueden aparecer frames repetidos
         indices = np.unique(indices)
         if len(indices) < self.num_frames:
             indices = np.round(np.interp(
@@ -137,15 +135,10 @@ class AccidentClipDataset(Dataset):
             )).astype(int)
 
         # 3. Temporal reversal (p=0.08): invierte el orden del clip.
-        # Obliga al modelo a no depender únicamente del orden temporal.
-        # Probabilidad baja para no introducir demasiado ruido semántico
-        # (un accidente al revés es poco natural).
         if np.random.random() < 0.08:
             indices = indices[::-1].copy()
 
         # 4. Frame dropout (p=0.10): reemplaza un frame aleatorio por el anterior.
-        # Simula frames perdidos o corrompidos, habituales en dashcams.
-        # Se excluye el frame 0 para no perder el contexto inicial.
         if np.random.random() < 0.10:
             drop_idx = np.random.randint(1, self.num_frames)
             indices[drop_idx] = indices[drop_idx - 1]

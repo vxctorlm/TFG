@@ -1,11 +1,12 @@
 from torchvision.transforms import v2
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, WeightedRandomSampler
 import torch
 import torch.nn as nn
 import os
 import wandb
 import random
 import numpy as np
+import math
 from datetime import datetime
 from sklearn.metrics import accuracy_score, f1_score, average_precision_score, roc_auc_score
 
@@ -30,12 +31,13 @@ def evaluate(model, dataloader, criterion, device):
     all_labels = []
     all_preds = []
     all_scores = []
+    all_attn = []
 
     for clips, labels in dataloader:
         clips = clips.to(device, non_blocking=True)
         labels = labels.to(device, non_blocking=True)
 
-        outputs = model(clips)
+        outputs, attn_weights = model(clips)
         loss = criterion(outputs, labels)
 
         running_loss += loss.item()
@@ -46,6 +48,7 @@ def evaluate(model, dataloader, criterion, device):
         all_labels.extend(labels.cpu().numpy().tolist())
         all_preds.extend(preds.cpu().numpy().tolist())
         all_scores.extend(probs.cpu().numpy().tolist())
+        all_attn.append(attn_weights.cpu().numpy())
 
     val_loss = running_loss / len(dataloader)
     val_acc = accuracy_score(all_labels, all_preds)
@@ -53,7 +56,9 @@ def evaluate(model, dataloader, criterion, device):
     val_ap = average_precision_score(all_labels, all_scores)
     val_auc = roc_auc_score(all_labels, all_scores)
 
-    return val_loss, val_acc, val_f1, val_ap, val_auc
+    mean_attn = np.concatenate(all_attn, axis=0).mean(axis=0)
+
+    return val_loss, val_acc, val_f1, val_ap, val_auc, mean_attn
 
 
 def build_clip_transform(
@@ -64,6 +69,7 @@ def build_clip_transform(
     use_color_jitter=False,
     use_random_resized_crop=False,
     use_gaussian_blur=False,
+    use_random_erasing=False,
 ):
     ops = []
 
@@ -71,8 +77,8 @@ def build_clip_transform(
         ops.append(
             v2.RandomResizedCrop(
                 size=image_size,
-                scale=(0.90, 1.0),
-                ratio=(0.95, 1.05),
+                scale=(0.80, 1.0),
+                ratio=(0.90, 1.10),
                 antialias=True,
             )
         )
@@ -86,17 +92,17 @@ def build_clip_transform(
         if use_color_jitter:
             ops.append(
                 v2.ColorJitter(
-                    brightness=0.1,
-                    contrast=0.1,
-                    saturation=0.1,
-                    hue=0.02,
+                    brightness=0.2,
+                    contrast=0.2,
+                    saturation=0.2,
+                    hue=0.05,
                 )
             )
 
         if use_gaussian_blur:
             ops.append(
                 v2.RandomApply(
-                    [v2.GaussianBlur(kernel_size=3, sigma=(0.1, 0.5))],
+                    [v2.GaussianBlur(kernel_size=3, sigma=(0.1, 1.0))],
                     p=0.3,
                 )
             )
@@ -109,7 +115,33 @@ def build_clip_transform(
         ),
     ])
 
+    if train and enable_augmentation and use_random_erasing:
+        ops.append(
+            v2.RandomErasing(p=0.15, scale=(0.02, 0.15), ratio=(0.3, 3.3))
+        )
+
     return v2.Compose(ops)
+
+
+class CosineAnnealingWithWarmup(torch.optim.lr_scheduler._LRScheduler):
+    """Linear warmup + cosine decay a eta_min."""
+    def __init__(self, optimizer, warmup_epochs, total_epochs, eta_min=1e-6, last_epoch=-1):
+        self.warmup_epochs = warmup_epochs
+        self.total_epochs = total_epochs
+        self.eta_min = eta_min
+        super().__init__(optimizer, last_epoch)
+
+    def get_lr(self):
+        if self.last_epoch < self.warmup_epochs:
+            alpha = (self.last_epoch + 1) / self.warmup_epochs
+            return [base_lr * alpha for base_lr in self.base_lrs]
+        else:
+            progress = (self.last_epoch - self.warmup_epochs) / max(1, self.total_epochs - self.warmup_epochs)
+            cosine_factor = 0.5 * (1.0 + math.cos(math.pi * progress))
+            return [
+                self.eta_min + (base_lr - self.eta_min) * cosine_factor
+                for base_lr in self.base_lrs
+            ]
 
 
 def main():
@@ -118,85 +150,79 @@ def main():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("CUDA available:", torch.cuda.is_available())
-    if torch.cuda.is_available():
-        print("Current device:", torch.cuda.current_device())
-        print("Device name:", torch.cuda.get_device_name(0))
-    else:
-        print("Using CPU")
 
-    # ── Hiperparámetros ────────────────────────────────────────────────────────
+    # ── Hiperparámetros ───────────────────────────────────────────────────────
     batch_size = 8
-    num_epochs = 100
-    weight_decay = 1e-4
+    num_epochs = 30
+    weight_decay = 1e-3
     num_frames = 16
 
-    # ── Backbone ───────────────────────────────────────────────────────────────
-    # Configuración v5: backbone completamente congelado.
-    # Las corridas con unfreeze_layer4 empeoraron val_ap (0.632 vs 0.637)
-    # porque layer4 se especializa en los 2282 ejemplos de train incluso
-    # con lr=2e-6. Cuello de botella es tamaño del dataset, no capacidad.
+    # Backbone: volvemos a layer4 congelada. Ahora que el task es correcto,
+    # partimos del setup que mejor se portó y vamos de ahí.
     pretrained = True
     freeze_early = False
     freeze_all = True
     unfreeze_layer4 = False
 
-    learning_rate = 2e-5        # proj + GRU + classifier
+    learning_rate = 1e-4
+    warmup_epochs = 3
+    eta_min = 1e-6
 
-    # ── Augmentación espacial ─────────────────────────────────────────────────
+    # ── Modo ANTICIPACIÓN ────────────────────────────────────────────────────
+    # Los clips label=1 se recortan para terminar anticipation_offset frames
+    # ANTES del TOA. Con offset=15 y ~30fps del dataset, el modelo ha de
+    # predecir el accidente 0.5 s antes de que ocurra.
+    anticipation_mode = True
+    anticipation_offset = 1
+
+    # Augmentación espacial
     enable_augmentation = True
     use_hflip = True
     use_color_jitter = True
-    use_random_resized_crop = False
+    use_random_resized_crop = True
     use_gaussian_blur = False
+    use_random_erasing = False
 
-    # ── Augmentación temporal ─────────────────────────────────────────────────
+    # Augmentación temporal.
+    # IMPORTANTE: con anticipation_mode el TOA queda FUERA del clip efectivo,
+    # así que toa_center_strength solo tiene efecto si el TOA cae dentro del
+    # rango [start, effective_end]. Tras el clamp interno ya se comporta bien,
+    # pero bajamos un poco la fuerza para no sesgar todo al final del clip.
     use_temporal_augmentation = True
-    temporal_max_jitter = 2
-    # Bajado de 0.62 a 0.3: con 0.62 se introduce un sesgo en train
-    # (frames centrados en el TOA) que no existe en val (muestreo uniforme).
-    toa_center_strength = 0.3
+    temporal_max_jitter = 3
+    toa_center_strength = 0.15
 
-    # ── Modelo ────────────────────────────────────────────────────────────────
-    gru_num_layers = 1      # Vuelve a 1: con backbone congelado necesitamos más capacidad en GRU
-    d_model = 256
-    dropout = 0.35
-    bidirectional = False
+    # Modelo
+    d_model = 64
+    gru_hidden = 64
+    gru_num_layers = 1
+    dropout = 0.3
+    bidirectional = True
 
-    # ── MixUp temporal ────────────────────────────────────────────────────────
-    # Mezcla dos clips del mismo batch ponderadamente. Obliga al modelo
-    # a generalizar mejor creando ejemplos sinteticos intermedios entre clases.
-    # Util en datasets pequeños como este (2282 samples).
-    use_mixup = True
-    mixup_alpha = 0.2       # Beta(alpha, alpha): alpha bajo = mezclas suaves
-    mixup_prob = 0.5        # Probabilidad de aplicar mixup a cada batch
+    # MixUp
+    use_mixup = False
+    mixup_alpha = 0.2
+    mixup_prob = 0.5
 
-    # ── Label smoothing ───────────────────────────────────────────────────────
-    # Penaliza predicciones con prob > 0.9. Evita que val_loss se dispare
-    # desde epoch 0 por logits sobreconfiados.
     label_smoothing = 0.1
+    use_weighted_sampler = True
 
-    # ── Early stopping ────────────────────────────────────────────────────────
-    patience = 8            # Subido a 5: con backbone congelado el aprendizaje es más lento
+    # Early stopping
+    patience = 8
     min_delta = 0.001
-    best_val_ap_for_stop = -1.0
     early_stop_counter = 0
 
-    # ── Run name ──────────────────────────────────────────────────────────────
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     frames_tag = "allf" if num_frames is None else f"{num_frames}f"
     run_name = (
-        f"gru_v7_{timestamp}_{frames_tag}_seed{seed}"
+        f"gru_v10_ANTIC_{timestamp}_{frames_tag}_seed{seed}"
+        f"_offset{anticipation_offset}"
         f"_freezeAll{int(freeze_all)}"
-        f"_augTemp{int(use_temporal_augmentation)}"
+        f"_lr{learning_rate:.0e}_wd{weight_decay:.0e}"
         f"_aug{int(enable_augmentation)}"
-        f"_cj{int(use_color_jitter)}"
-        f"_flip{int(use_hflip)}"
-        f"_dm{d_model}"
-        f"_gru{gru_num_layers}"
-        f"_bi{int(bidirectional)}"
-        f"_ls{int(label_smoothing * 10)}"
-        f"_meanpool"
-        f"_mixup{int(use_mixup)}a{int(mixup_alpha*10)}p{int(mixup_prob*10)}"
+        f"_dm{d_model}_gru{gru_num_layers}_bi{int(bidirectional)}"
+        f"_do{int(dropout*10)}_ls{int(label_smoothing*10)}"
+        f"_cosine_wu{warmup_epochs}"
     )
     print("Run name:", run_name)
 
@@ -210,32 +236,38 @@ def main():
             "learning_rate": learning_rate,
             "weight_decay": weight_decay,
             "num_frames": num_frames,
-            "model": "ResNet18 (pretrained, frozen) + Temporal GRU",
-            "pooling": "mean",
+            "task": "anticipation",
+            "anticipation_mode": anticipation_mode,
+            "anticipation_offset": anticipation_offset,
+            "model": "ResNet18 (frozen) + Temporal GRU",
+            "pooling": "attention",
             "d_model": d_model,
             "gru_num_layers": gru_num_layers,
             "bidirectional": bidirectional,
             "pretrained": pretrained,
-            "freeze_early": freeze_early,
             "freeze_all": freeze_all,
+            "unfreeze_layer4": unfreeze_layer4,
             "dropout": dropout,
             "label_smoothing": label_smoothing,
             "patience": patience,
             "min_delta": min_delta,
             "stop_metric": "val_ap",
-            "scheduler_metric": "val_ap",
+            "scheduler": "cosine_with_warmup",
+            "warmup_epochs": warmup_epochs,
+            "eta_min": eta_min,
             "use_mixup": use_mixup,
-            "mixup_alpha": mixup_alpha,
-            "mixup_prob": mixup_prob,
             "enable_augmentation": enable_augmentation,
             "use_hflip": use_hflip,
             "use_color_jitter": use_color_jitter,
             "use_random_resized_crop": use_random_resized_crop,
             "use_gaussian_blur": use_gaussian_blur,
+            "use_random_erasing": use_random_erasing,
+            "use_weighted_sampler": use_weighted_sampler,
+            "temporal_max_jitter": temporal_max_jitter,
+            "toa_center_strength": toa_center_strength,
         }
     )
 
-    # ── Transforms ───────────────────────────────────────────────────────────
     train_transform = build_clip_transform(
         train=True,
         image_size=(224, 224),
@@ -244,6 +276,7 @@ def main():
         use_color_jitter=use_color_jitter,
         use_random_resized_crop=use_random_resized_crop,
         use_gaussian_blur=use_gaussian_blur,
+        use_random_erasing=use_random_erasing,
     )
 
     val_transform = build_clip_transform(
@@ -252,7 +285,6 @@ def main():
         enable_augmentation=False,
     )
 
-    # ── Datasets ──────────────────────────────────────────────────────────────
     train_dataset = AccidentClipDataset(
         txt_path="/data-fast/data-server/vlopezmo/model/training/training_train.txt",
         rgb_root="/data-fast/data-server/vlopezmo/DADA2000",
@@ -263,6 +295,9 @@ def main():
         temporal_max_jitter=temporal_max_jitter,
         use_toa_guided_sampling=True,
         toa_center_strength=toa_center_strength,
+        anticipation_mode=False,              # ← ACTIVADO
+        anticipation_offset=anticipation_offset,
+        drop_invalid_samples=True,
     )
 
     val_dataset = AccidentClipDataset(
@@ -272,37 +307,54 @@ def main():
         transform=val_transform,
         train=False,
         use_temporal_augmentation=False,
+        anticipation_mode=False,              # ← TAMBIÉN EN VAL
+        anticipation_offset=anticipation_offset,
+        drop_invalid_samples=True,
     )
 
     print("Número de muestras de train:", len(train_dataset))
     print("Número de muestras de val:", len(val_dataset))
 
-    # ── Diagnóstico de distribución de clases ─────────────────────────────────
     labels_train = [s["label"] for s in train_dataset.samples]
-    labels_val   = [s["label"] for s in val_dataset.samples]
-    n_tr, n_va   = len(labels_train), len(labels_val)
+    labels_val = [s["label"] for s in val_dataset.samples]
+    n_tr, n_va = len(labels_train), len(labels_val)
     pos_tr, pos_va = sum(labels_train), sum(labels_val)
     print(f"Train: {pos_tr} acc ({100*pos_tr/n_tr:.1f}%) | "
           f"{n_tr-pos_tr} no-acc ({100*(n_tr-pos_tr)/n_tr:.1f}%)")
     print(f"Val:   {pos_va} acc ({100*pos_va/n_va:.1f}%) | "
           f"{n_va-pos_va} no-acc ({100*(n_va-pos_va)/n_va:.1f}%)")
-    diff = abs(pos_tr/n_tr - pos_va/n_va) * 100
-    if diff > 10:
-        print(f"Diferencia de distribucion entre splits: {diff:.1f}pp")
-    else:
-        print(f"Distribucion similar entre splits (diff={diff:.1f}pp)")
 
-    # Distribucion 53/47 — no se necesitan pesos de clase.
-    # Con distribucion casi balanceada los pesos introducen inestabilidad
-    # sin aportar beneficio (causaron colapso de val_f1 a 0.20 en epoch 3).
-    class_weights = None
-    print("Class weights: desactivados (distribucion balanceada)")
+    # ── Diagnóstico: distribución de longitudes efectivas tras anticipation ─
+    # Útil para confirmar que el recorte se aplicó a los label=1.
+    eff_lens_1 = [s["effective_end"] - s["start"] + 1
+                  for s in train_dataset.samples if s["label"] == 1]
+    eff_lens_0 = [s["effective_end"] - s["start"] + 1
+                  for s in train_dataset.samples if s["label"] == 0]
+    print(f"Longitud efectiva label=1 (TRAIN): "
+          f"min={min(eff_lens_1)}, median={int(np.median(eff_lens_1))}, max={max(eff_lens_1)}")
+    print(f"Longitud efectiva label=0 (TRAIN): "
+          f"min={min(eff_lens_0)}, median={int(np.median(eff_lens_0))}, max={max(eff_lens_0)}")
 
-    # ── DataLoaders ───────────────────────────────────────────────────────────
+    train_sampler = None
+    shuffle_train = True
+
+    if use_weighted_sampler:
+        class_counts = np.bincount(labels_train)
+        class_weights_arr = 1.0 / class_counts.astype(np.float64)
+        sample_weights = [class_weights_arr[l] for l in labels_train]
+        train_sampler = WeightedRandomSampler(
+            weights=sample_weights,
+            num_samples=len(sample_weights),
+            replacement=True,
+        )
+        shuffle_train = False
+        print(f"WeightedRandomSampler activado. Pesos por clase: {class_weights_arr}")
+
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
-        shuffle=True,
+        shuffle=shuffle_train,
+        sampler=train_sampler,
         num_workers=2,
         pin_memory=True,
         persistent_workers=True,
@@ -317,38 +369,45 @@ def main():
         persistent_workers=True,
     )
 
-    # ── Modelo ────────────────────────────────────────────────────────────────
     model = BaselineResNetGRU(
         num_classes=2,
         d_model=d_model,
-        num_layers=gru_num_layers,
+        gru_hidden=gru_hidden,
+        gru_layers=gru_num_layers,
         dropout=dropout,
         pretrained=pretrained,
         freeze_early=freeze_early,
         freeze_all=freeze_all,
+        unfreeze_layer4=unfreeze_layer4,
         bidirectional=bidirectional,
     ).to(device)
 
-    # FIX: dos criterios separados.
-    # criterion_train: label_smoothing + pesos de clase para el loop de entrenamiento.
-    # criterion_val:   sin label_smoothing para que val_loss sea comparable con
-    #                  train_loss y no este artificialmente inflada.
-    #                  Con label_smoothing incluso una prediccion perfecta tiene loss > 0.
-    criterion_train = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
-    criterion_val   = nn.CrossEntropyLoss()
+    # BN check (debería dar 0/20 con freeze_all=True y unfreeze_layer4=False)
+    model.train()
+    bn_train = sum(1 for m in model.backbone.modules()
+                   if isinstance(m, nn.BatchNorm2d) and m.training)
+    bn_total = sum(1 for m in model.backbone.modules()
+                   if isinstance(m, nn.BatchNorm2d))
+    print(f"[BN check] backbone BN en train: {bn_train}/{bn_total}  (esperado 0/{bn_total})")
 
-    # Solo optimizamos parametros entrenables (backbone congelado excluido)
+    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    total_params = sum(p.numel() for p in model.parameters())
+    print(f"Parámetros entrenables: {trainable_params:,} / {total_params:,} "
+          f"({100*trainable_params/total_params:.1f}%)")
+
+    criterion_val = nn.CrossEntropyLoss()
+
     optimizer = torch.optim.AdamW(
         filter(lambda p: p.requires_grad, model.parameters()),
         lr=learning_rate,
         weight_decay=weight_decay,
     )
 
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    scheduler = CosineAnnealingWithWarmup(
         optimizer,
-        mode="max",
-        factor=0.5,
-        patience=3,
+        warmup_epochs=warmup_epochs,
+        total_epochs=num_epochs,
+        eta_min=eta_min,
     )
 
     ckpt_dir = "/data-fast/data-server/vlopezmo/model/checkpoints"
@@ -368,41 +427,34 @@ def main():
             clips = clips.to(device, non_blocking=True)
             labels = labels.to(device, non_blocking=True)
 
-            # MixUp temporal: con probabilidad mixup_prob, mezcla este batch
-            # con una permutacion de si mismo usando lambda ~ Beta(alpha, alpha).
-            # Reemplaza el batch original por la version mezclada.
             apply_mixup = use_mixup and np.random.random() < mixup_prob
             if apply_mixup:
-                lam = np.random.beta(mixup_alpha, mixup_alpha)
-                # Garantizar que lam no sea trivial (evita no-ops)
+                lam = float(np.random.beta(mixup_alpha, mixup_alpha))
                 lam = max(lam, 1.0 - lam)
                 idx = torch.randperm(clips.size(0), device=device)
                 clips_mixed = lam * clips + (1.0 - lam) * clips[idx]
-                labels_a, labels_b = labels, labels[idx]
+                labels_one = nn.functional.one_hot(labels, 2).float()
+                labels_mixed = lam * labels_one + (1.0 - lam) * labels_one[idx]
             else:
                 clips_mixed = clips
+                labels_mixed = labels
 
             optimizer.zero_grad()
-            outputs = model(clips_mixed)
+            outputs, _ = model(clips_mixed)
 
             if apply_mixup:
-                # Loss mixta: combinacion convexa de los dos targets
-                loss = lam * criterion_train(outputs, labels_a) \
-                     + (1.0 - lam) * criterion_train(outputs, labels_b)
+                loss = nn.functional.cross_entropy(outputs, labels_mixed)
             else:
-                loss = criterion_train(outputs, labels)
+                loss = nn.functional.cross_entropy(
+                    outputs, labels, label_smoothing=label_smoothing
+                )
 
             loss.backward()
-
-            # Gradient clipping: previene exploding gradients en RNNs
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-
             optimizer.step()
 
             running_loss += loss.item()
 
-            # Metricas de train: siempre sobre las labels originales (no mezcladas)
-            # para que el reporte sea coherente con la evaluacion.
             preds = torch.argmax(outputs, dim=1)
             probs = torch.softmax(outputs, dim=1)[:, 1]
 
@@ -423,11 +475,15 @@ def main():
         train_ap = average_precision_score(all_train_labels, all_train_scores)
         train_auc = roc_auc_score(all_train_labels, all_train_scores)
 
-        val_loss, val_acc, val_f1, val_ap, val_auc = evaluate(
+        val_loss, val_acc, val_f1, val_ap, val_auc, mean_attn = evaluate(
             model, val_loader, criterion_val, device
         )
 
-        print(f"\nEpoch [{epoch+1}/{num_epochs}] completed")
+        current_lr = optimizer.param_groups[0]["lr"]
+        scheduler.step()
+        new_lr = optimizer.param_groups[0]["lr"]
+
+        print(f"\nEpoch [{epoch+1}/{num_epochs}] completed  (lr: {current_lr:.2e} → {new_lr:.2e})")
         print(
             f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | "
             f"Train F1: {train_f1:.4f} | Train AP: {train_ap:.4f} | Train AUC: {train_auc:.4f} || "
@@ -435,9 +491,14 @@ def main():
             f"Val F1: {val_f1:.4f} | Val AP: {val_ap:.4f} | Val AUC: {val_auc:.4f}"
         )
 
+        attn_table = wandb.Table(
+            data=[[i, float(w)] for i, w in enumerate(mean_attn)],
+            columns=["frame_idx", "attn_weight"],
+        )
+
         wandb.log({
             "epoch": epoch + 1,
-            "lr": optimizer.param_groups[0]["lr"],
+            "lr": current_lr,
 
             "train_loss": train_loss,
             "train_acc": train_acc,
@@ -450,18 +511,19 @@ def main():
             "val_f1": val_f1,
             "val_ap": val_ap,
             "val_roc_auc": val_auc,
+
+            "val_attn_distribution": wandb.plot.bar(
+                attn_table, "frame_idx", "attn_weight",
+                title=f"Mean temporal attention (epoch {epoch+1})"
+            ),
         })
 
-        old_lr = optimizer.param_groups[0]["lr"]
-        scheduler.step(val_ap)
-        new_lr = optimizer.param_groups[0]["lr"]
-
-        if new_lr != old_lr:
-            print(f"Learning rate reducido: {old_lr:.2e} -> {new_lr:.2e}")
-
-        # Guardar mejor modelo según val_ap
-        if val_ap > best_val_ap:
+        improved = val_ap > best_val_ap + min_delta
+        if improved:
             best_val_ap = val_ap
+            early_stop_counter = 0
+            print(f"Mejora en val_ap: {val_ap:.4f}")
+
             ckpt_path = os.path.join(ckpt_dir, f"{run_name}_best_val_ap.pt")
             torch.save({
                 "epoch": epoch + 1,
@@ -472,34 +534,23 @@ def main():
                 "val_acc": val_acc,
                 "val_f1": val_f1,
                 "val_auc": val_auc,
-                "train_loss": train_loss,
-                "train_acc": train_acc,
-                "train_f1": train_f1,
+                "val_loss": val_loss,
                 "train_ap": train_ap,
                 "train_auc": train_auc,
-                "val_loss": val_loss,
+                "anticipation_mode": anticipation_mode,
+                "anticipation_offset": anticipation_offset,
                 "num_frames": num_frames,
                 "dropout": dropout,
-                "label_smoothing": label_smoothing,
                 "d_model": d_model,
                 "gru_num_layers": gru_num_layers,
                 "bidirectional": bidirectional,
-                "pretrained": pretrained,
-                "freeze_early": freeze_early,
-                "freeze_all": freeze_all,
-                "use_mixup": use_mixup,
-            "mixup_alpha": mixup_alpha,
-            "mixup_prob": mixup_prob,
-            "enable_augmentation": enable_augmentation,
-                "use_hflip": use_hflip,
-                "use_color_jitter": use_color_jitter,
-                "use_random_resized_crop": use_random_resized_crop,
-                "use_gaussian_blur": use_gaussian_blur,
                 "seed": seed,
             }, ckpt_path)
             print(f"Nuevo mejor modelo guardado en: {ckpt_path}")
+        else:
+            early_stop_counter += 1
+            print(f"Sin mejora en val_ap. EarlyStopping counter: {early_stop_counter}/{patience}")
 
-        # Guardar último checkpoint
         last_ckpt_path = os.path.join(ckpt_dir, f"{run_name}_last.pt")
         torch.save({
             "epoch": epoch + 1,
@@ -507,43 +558,11 @@ def main():
             "optimizer_state_dict": optimizer.state_dict(),
             "scheduler_state_dict": scheduler.state_dict(),
             "val_ap": val_ap,
-            "val_acc": val_acc,
-            "val_f1": val_f1,
-            "val_auc": val_auc,
-            "train_loss": train_loss,
-            "train_acc": train_acc,
-            "train_f1": train_f1,
             "train_ap": train_ap,
-            "train_auc": train_auc,
-            "val_loss": val_loss,
-            "num_frames": num_frames,
-            "dropout": dropout,
-            "label_smoothing": label_smoothing,
-            "d_model": d_model,
-            "gru_num_layers": gru_num_layers,
-            "bidirectional": bidirectional,
-            "pretrained": pretrained,
-            "freeze_early": freeze_early,
-            "freeze_all": freeze_all,
-            "use_mixup": use_mixup,
-            "mixup_alpha": mixup_alpha,
-            "mixup_prob": mixup_prob,
-            "enable_augmentation": enable_augmentation,
-            "use_hflip": use_hflip,
-            "use_color_jitter": use_color_jitter,
-            "use_random_resized_crop": use_random_resized_crop,
-            "use_gaussian_blur": use_gaussian_blur,
+            "anticipation_mode": anticipation_mode,
+            "anticipation_offset": anticipation_offset,
             "seed": seed,
         }, last_ckpt_path)
-
-        # Early stopping según val_ap
-        if val_ap > best_val_ap_for_stop + min_delta:
-            best_val_ap_for_stop = val_ap
-            early_stop_counter = 0
-            print(f"Mejora en val_ap: {val_ap:.4f}")
-        else:
-            early_stop_counter += 1
-            print(f"Sin mejora en val_ap. EarlyStopping counter: {early_stop_counter}/{patience}")
 
         if early_stop_counter >= patience:
             print(f"Early stopping activado en epoch {epoch+1}")
