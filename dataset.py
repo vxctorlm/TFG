@@ -42,6 +42,8 @@ class AccidentClipDataset(Dataset):
 
     def _load_samples(self):
         samples = []
+        # FIX: contamos descartados por label para detectar pérdidas silenciosas de positivos
+        discarded_counts = {0: 0, 1: 0}
 
         with open(self.txt_path, "r", encoding="utf-8") as f:
             for line in f:
@@ -71,9 +73,19 @@ class AccidentClipDataset(Dataset):
 
                 # Filtrar muestras inválidas
                 if self.drop_invalid_samples and effective_end < sample["start"]:
+                    discarded_counts[sample["label"]] += 1
                     continue
 
                 samples.append(sample)
+
+        total_discarded = sum(discarded_counts.values())
+        if total_discarded > 0:
+            print(
+                f"[AccidentClipDataset] Muestras descartadas (effective_end < start): "
+                f"{total_discarded} total "
+                f"(label=0: {discarded_counts[0]}, label=1: {discarded_counts[1]}) "
+                f"← revisar si label=1 > 0 con anticipation_mode=True"
+            )
 
         return samples
 
@@ -89,6 +101,8 @@ class AccidentClipDataset(Dataset):
 
         # Si hay menos frames disponibles que num_frames, samplear CON REPETICIÓN
         # para garantizar siempre la misma longitud de salida (necesario para batch).
+        # FIX: usar np.round antes de astype(int) para evitar sesgo hacia el inicio
+        # del clip que produce .astype(int) (trunca en lugar de redondear).
         if self.num_frames is not None and total_len < self.num_frames:
             base_indices = np.linspace(start, end, self.num_frames)
             return np.round(base_indices).astype(int)
@@ -100,7 +114,7 @@ class AccidentClipDataset(Dataset):
 
         # Val/test: determinista, sin augmentation
         if not (self.train and self.use_temporal_augmentation):
-            return base_indices.astype(int)
+            return np.round(base_indices).astype(int)
 
         indices = base_indices.copy()
 
@@ -135,8 +149,10 @@ class AccidentClipDataset(Dataset):
             )).astype(int)
 
         # 3. Temporal reversal (p=0.08): invierte el orden del clip.
+        """
         if np.random.random() < 0.08:
             indices = indices[::-1].copy()
+        """
 
         # 4. Frame dropout (p=0.10): reemplaza un frame aleatorio por el anterior.
         if np.random.random() < 0.10:

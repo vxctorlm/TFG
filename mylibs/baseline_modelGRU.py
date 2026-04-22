@@ -106,32 +106,22 @@ class BaselineResNetGRU(nn.Module):
         )
 
     def train(self, mode: bool = True):
-        """
-        Override de train() para evitar que los BatchNorm del backbone
-        congelado actualicen sus running_mean/running_var durante el
-        entrenamiento.
-
-        Sin este override, aunque freeze_all=True pone requires_grad=False
-        en todos los params, los BN siguen acumulando estadísticas del
-        dataset nuevo cada vez que se llama model.train(). En evaluación
-        esas stats contaminadas se usan y las features del backbone salen
-        distintas a las de training → val_loss diverge aunque train baje.
-
-        Comportamiento:
-          - freeze_all=True, unfreeze_layer4=False → todo el backbone en eval().
-          - freeze_all=True, unfreeze_layer4=True  → backbone en eval() salvo
-            layer4, que sigue el modo normal (porque sus params sí entrenan).
-          - freeze_all=False → comportamiento estándar de PyTorch.
-        """
         super().train(mode)
 
         if self.freeze_all:
-            # Backbone entero en eval: BN usan running stats ImageNet tal cual
             self.backbone.eval()
 
-            # Si layer4 se descongela, ella sí entra en modo normal
             if self.unfreeze_layer4:
-                self.backbone.layer4.train(mode)
+                # FIX: activar solo layer4[1] (último bloque), que es el único
+                # cuyos parámetros tienen requires_grad=True. Activar layer4 entero
+                # pondría en train() los BN/Dropout de layer4[0], que no se actualiza,
+                # introduciendo variabilidad estocástica innecesaria.
+                self.backbone.layer4[1].train(mode)
+
+                # Mantener BN de layer4[1] en eval también (estadísticas pre-entrenadas)
+                for m in self.backbone.layer4[1].modules():
+                    if isinstance(m, nn.BatchNorm2d):
+                        m.eval()
 
         return self
 
