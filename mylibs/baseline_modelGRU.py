@@ -55,7 +55,8 @@ class BaselineResNetGRU(nn.Module):
         )
 
         if unfreeze_layer4:
-            for p in self.backbone.layer4.parameters():
+            #for p in self.backbone.layer4.parameters():
+            for p in self.backbone.layer4[1].parameters():
                 p.requires_grad = True
             print("[BaselineResNetGRU] layer4 descongelado.")
 

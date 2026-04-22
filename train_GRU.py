@@ -1,5 +1,5 @@
 from torchvision.transforms import v2
-from torch.utils.data import DataLoader, WeightedRandomSampler
+from torch.utils.data import DataLoader, WeightedRandomSampler, Subset
 import torch
 import torch.nn as nn
 import os
@@ -8,10 +8,26 @@ import random
 import numpy as np
 import math
 from datetime import datetime
-from sklearn.metrics import accuracy_score, f1_score, average_precision_score, roc_auc_score
+from sklearn.metrics import (
+    accuracy_score,
+    f1_score,
+    average_precision_score,
+    roc_auc_score,
+    confusion_matrix,
+)
 
 from model.dataset import AccidentClipDataset
 from model.mylibs.baseline_modelGRU import BaselineResNetGRU
+
+
+def set_backbone_bn_eval(model):
+    """
+    Mantiene las BatchNorm del backbone en modo eval.
+    Esto es importante al hacer fine-tuning parcial con batch size pequeño.
+    """
+    for m in model.backbone.modules():
+        if isinstance(m, nn.BatchNorm2d):
+            m.eval()
 
 
 def set_seed(seed: int = 42):
@@ -21,6 +37,18 @@ def set_seed(seed: int = 42):
 
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
+
+
+def get_labels_from_dataset(ds):
+    if isinstance(ds, Subset):
+        return [ds.dataset.samples[i]["label"] for i in ds.indices]
+    return [s["label"] for s in ds.samples]
+
+
+def get_samples_from_dataset(ds):
+    if isinstance(ds, Subset):
+        return [ds.dataset.samples[i] for i in ds.indices]
+    return ds.samples
 
 
 @torch.no_grad()
@@ -55,10 +83,19 @@ def evaluate(model, dataloader, criterion, device):
     val_f1 = f1_score(all_labels, all_preds, zero_division=0)
     val_ap = average_precision_score(all_labels, all_scores)
     val_auc = roc_auc_score(all_labels, all_scores)
+    val_cm = confusion_matrix(all_labels, all_preds, labels=[0, 1])
 
     mean_attn = np.concatenate(all_attn, axis=0).mean(axis=0)
 
-    return val_loss, val_acc, val_f1, val_ap, val_auc, mean_attn
+    print(
+        "Val probs:",
+        f"min={np.min(all_scores):.4f}",
+        f"max={np.max(all_scores):.4f}",
+        f"mean={np.mean(all_scores):.4f}",
+        f"std={np.std(all_scores):.4f}",
+    )
+
+    return val_loss, val_acc, val_f1, val_ap, val_auc, mean_attn, val_cm
 
 
 def build_clip_transform(
@@ -77,8 +114,8 @@ def build_clip_transform(
         ops.append(
             v2.RandomResizedCrop(
                 size=image_size,
-                scale=(0.80, 1.0),
-                ratio=(0.90, 1.10),
+                scale=(0.90, 1.0),
+                ratio=(0.95, 1.05),
                 antialias=True,
             )
         )
@@ -92,18 +129,18 @@ def build_clip_transform(
         if use_color_jitter:
             ops.append(
                 v2.ColorJitter(
-                    brightness=0.2,
-                    contrast=0.2,
-                    saturation=0.2,
-                    hue=0.05,
+                    brightness=0.10,
+                    contrast=0.10,
+                    saturation=0.10,
+                    hue=0.02,
                 )
             )
 
         if use_gaussian_blur:
             ops.append(
                 v2.RandomApply(
-                    [v2.GaussianBlur(kernel_size=3, sigma=(0.1, 1.0))],
-                    p=0.3,
+                    [v2.GaussianBlur(kernel_size=3, sigma=(0.1, 0.5))],
+                    p=0.2,
                 )
             )
 
@@ -117,14 +154,22 @@ def build_clip_transform(
 
     if train and enable_augmentation and use_random_erasing:
         ops.append(
-            v2.RandomErasing(p=0.15, scale=(0.02, 0.15), ratio=(0.3, 3.3))
+            v2.RandomErasing(
+                p=0.10,
+                scale=(0.02, 0.10),
+                ratio=(0.3, 3.3),
+            )
         )
 
     return v2.Compose(ops)
 
 
 class CosineAnnealingWithWarmup(torch.optim.lr_scheduler._LRScheduler):
-    """Linear warmup + cosine decay a eta_min."""
+    """
+    Linear warmup + cosine decay hasta eta_min.
+    Funciona con múltiples param_groups.
+    """
+
     def __init__(self, optimizer, warmup_epochs, total_epochs, eta_min=1e-6, last_epoch=-1):
         self.warmup_epochs = warmup_epochs
         self.total_epochs = total_epochs
@@ -135,13 +180,16 @@ class CosineAnnealingWithWarmup(torch.optim.lr_scheduler._LRScheduler):
         if self.last_epoch < self.warmup_epochs:
             alpha = (self.last_epoch + 1) / self.warmup_epochs
             return [base_lr * alpha for base_lr in self.base_lrs]
-        else:
-            progress = (self.last_epoch - self.warmup_epochs) / max(1, self.total_epochs - self.warmup_epochs)
-            cosine_factor = 0.5 * (1.0 + math.cos(math.pi * progress))
-            return [
-                self.eta_min + (base_lr - self.eta_min) * cosine_factor
-                for base_lr in self.base_lrs
-            ]
+
+        progress = (self.last_epoch - self.warmup_epochs) / max(
+            1, self.total_epochs - self.warmup_epochs
+        )
+        cosine_factor = 0.5 * (1.0 + math.cos(math.pi * progress))
+
+        return [
+            self.eta_min + (base_lr - self.eta_min) * cosine_factor
+            for base_lr in self.base_lrs
+        ]
 
 
 def main():
@@ -151,110 +199,135 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("CUDA available:", torch.cuda.is_available())
 
-    # ── Hiperparámetros ───────────────────────────────────────────────────────
-    batch_size = 8
+    # ── CONFIG PRINCIPAL ──────────────────────────────────────────────────────
+    sanity_check = False
+
+    batch_size = 16
     num_epochs = 30
-    weight_decay = 1e-3
+    weight_decay = 1e-4
     num_frames = 16
 
-    # Backbone: volvemos a layer4 congelada. Ahora que el task es correcto,
-    # partimos del setup que mejor se portó y vamos de ahí.
     pretrained = True
     freeze_early = False
-    freeze_all = True
-    unfreeze_layer4 = False
 
-    learning_rate = 1e-4
+    # Fine-tuning parcial:
+    # congelamos backbone completo y reactivamos solo layer4.
+    freeze_all = True
+    unfreeze_layer4 = True
+
+    learning_rate_head = 1e-4
+    learning_rate_layer4 = 3e-5
+
     warmup_epochs = 3
     eta_min = 1e-6
 
-    # ── Modo ANTICIPACIÓN ────────────────────────────────────────────────────
-    # Los clips label=1 se recortan para terminar anticipation_offset frames
-    # ANTES del TOA. Con offset=15 y ~30fps del dataset, el modelo ha de
-    # predecir el accidente 0.5 s antes de que ocurra.
-    anticipation_mode = True
+    # El .txt nuevo ya contiene ventanas pre-TOA:
+    # label 1: distance 1-30
+    # label 0: distance 61-120
+    # distance 31-60 descartado
+    anticipation_mode = False
     anticipation_offset = 1
 
-    # Augmentación espacial
+    # Augmentación espacial moderada
     enable_augmentation = True
     use_hflip = True
     use_color_jitter = True
-    use_random_resized_crop = True
-    use_gaussian_blur = False
+    use_random_resized_crop = False
+    use_gaussian_blur = True
     use_random_erasing = False
 
-    # Augmentación temporal.
-    # IMPORTANTE: con anticipation_mode el TOA queda FUERA del clip efectivo,
-    # así que toa_center_strength solo tiene efecto si el TOA cae dentro del
-    # rango [start, effective_end]. Tras el clamp interno ya se comporta bien,
-    # pero bajamos un poco la fuerza para no sesgar todo al final del clip.
-    use_temporal_augmentation = True
-    temporal_max_jitter = 3
-    toa_center_strength = 0.15
+    # Sin augmentación temporal para no alterar ventanas ya definidas
+    use_temporal_augmentation = False
+    temporal_max_jitter = 0
+    use_toa_guided_sampling = False
+    toa_center_strength = 0.0
 
     # Modelo
-    d_model = 64
-    gru_hidden = 64
+    d_model = 128
+    gru_hidden = 128
     gru_num_layers = 1
     dropout = 0.3
     bidirectional = True
 
-    # MixUp
+    # Regularización
     use_mixup = False
     mixup_alpha = 0.2
     mixup_prob = 0.5
 
-    label_smoothing = 0.1
-    use_weighted_sampler = True
+    label_smoothing = 0.0
+    use_weighted_sampler = False
+    class_weights = None
 
-    # Early stopping
-    patience = 8
+    # Early stopping por AUC
+    patience = 6
     min_delta = 0.001
     early_stop_counter = 0
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     frames_tag = "allf" if num_frames is None else f"{num_frames}f"
+
     run_name = (
-        f"gru_v10_ANTIC_{timestamp}_{frames_tag}_seed{seed}"
-        f"_offset{anticipation_offset}"
-        f"_freezeAll{int(freeze_all)}"
-        f"_lr{learning_rate:.0e}_wd{weight_decay:.0e}"
+        f"gru_v15_GAP_full_layer4_{timestamp}_{frames_tag}_seed{seed}"
+        f"_freezeAll{int(freeze_all)}_unfreezeL4{int(unfreeze_layer4)}"
+        f"_lrHead1e-04_lrL41e-05"
+        f"_wd{weight_decay:.0e}"
         f"_aug{int(enable_augmentation)}"
         f"_dm{d_model}_gru{gru_num_layers}_bi{int(bidirectional)}"
-        f"_do{int(dropout*10)}_ls{int(label_smoothing*10)}"
+        f"_do{int(dropout * 10)}"
+        f"_aucStop"
         f"_cosine_wu{warmup_epochs}"
     )
+
     print("Run name:", run_name)
 
     wandb.init(
         project="tfg-accident-prediction",
         name=run_name,
         config={
+            "version": "v15_gap_full_layer4",
+            "sanity_check": sanity_check,
             "seed": seed,
             "batch_size": batch_size,
             "num_epochs": num_epochs,
-            "learning_rate": learning_rate,
             "weight_decay": weight_decay,
             "num_frames": num_frames,
-            "task": "anticipation",
+
+            "task": "windowed_anticipation_gap",
+            "positive_distance": "1-30",
+            "discarded_distance": "31-60",
+            "negative_distance": "61-120",
+
             "anticipation_mode": anticipation_mode,
             "anticipation_offset": anticipation_offset,
-            "model": "ResNet18 (frozen) + Temporal GRU",
+
+            "model": "ResNet18 layer4 finetune + Temporal GRU",
             "pooling": "attention",
             "d_model": d_model,
+            "gru_hidden": gru_hidden,
             "gru_num_layers": gru_num_layers,
             "bidirectional": bidirectional,
+            "dropout": dropout,
+
             "pretrained": pretrained,
             "freeze_all": freeze_all,
             "unfreeze_layer4": unfreeze_layer4,
-            "dropout": dropout,
+
+            "lr_head": learning_rate_head,
+            "lr_layer4": learning_rate_layer4,
+
             "label_smoothing": label_smoothing,
+            "class_weights": class_weights,
+            "use_weighted_sampler": use_weighted_sampler,
+
             "patience": patience,
             "min_delta": min_delta,
-            "stop_metric": "val_ap",
+            "stop_metric": "val_auc",
+            "checkpoint_metric": "val_auc",
+
             "scheduler": "cosine_with_warmup",
             "warmup_epochs": warmup_epochs,
             "eta_min": eta_min,
+
             "use_mixup": use_mixup,
             "enable_augmentation": enable_augmentation,
             "use_hflip": use_hflip,
@@ -262,10 +335,15 @@ def main():
             "use_random_resized_crop": use_random_resized_crop,
             "use_gaussian_blur": use_gaussian_blur,
             "use_random_erasing": use_random_erasing,
-            "use_weighted_sampler": use_weighted_sampler,
+
+            "use_temporal_augmentation": use_temporal_augmentation,
             "temporal_max_jitter": temporal_max_jitter,
+            "use_toa_guided_sampling": use_toa_guided_sampling,
             "toa_center_strength": toa_center_strength,
-        }
+
+            "start_only_baseline_auc": 0.7136,
+            "start_only_baseline_ap": 0.6527,
+        },
     )
 
     train_transform = build_clip_transform(
@@ -293,9 +371,9 @@ def main():
         train=True,
         use_temporal_augmentation=use_temporal_augmentation,
         temporal_max_jitter=temporal_max_jitter,
-        use_toa_guided_sampling=True,
+        use_toa_guided_sampling=use_toa_guided_sampling,
         toa_center_strength=toa_center_strength,
-        anticipation_mode=False,              # ← ACTIVADO
+        anticipation_mode=anticipation_mode,
         anticipation_offset=anticipation_offset,
         drop_invalid_samples=True,
     )
@@ -307,7 +385,10 @@ def main():
         transform=val_transform,
         train=False,
         use_temporal_augmentation=False,
-        anticipation_mode=False,              # ← TAMBIÉN EN VAL
+        temporal_max_jitter=0,
+        use_toa_guided_sampling=False,
+        toa_center_strength=0.0,
+        anticipation_mode=anticipation_mode,
         anticipation_offset=anticipation_offset,
         drop_invalid_samples=True,
     )
@@ -315,25 +396,52 @@ def main():
     print("Número de muestras de train:", len(train_dataset))
     print("Número de muestras de val:", len(val_dataset))
 
-    labels_train = [s["label"] for s in train_dataset.samples]
-    labels_val = [s["label"] for s in val_dataset.samples]
-    n_tr, n_va = len(labels_train), len(labels_val)
-    pos_tr, pos_va = sum(labels_train), sum(labels_val)
-    print(f"Train: {pos_tr} acc ({100*pos_tr/n_tr:.1f}%) | "
-          f"{n_tr-pos_tr} no-acc ({100*(n_tr-pos_tr)/n_tr:.1f}%)")
-    print(f"Val:   {pos_va} acc ({100*pos_va/n_va:.1f}%) | "
-          f"{n_va-pos_va} no-acc ({100*(n_va-pos_va)/n_va:.1f}%)")
+    labels_train = get_labels_from_dataset(train_dataset)
+    labels_val = get_labels_from_dataset(val_dataset)
 
-    # ── Diagnóstico: distribución de longitudes efectivas tras anticipation ─
-    # Útil para confirmar que el recorte se aplicó a los label=1.
-    eff_lens_1 = [s["effective_end"] - s["start"] + 1
-                  for s in train_dataset.samples if s["label"] == 1]
-    eff_lens_0 = [s["effective_end"] - s["start"] + 1
-                  for s in train_dataset.samples if s["label"] == 0]
-    print(f"Longitud efectiva label=1 (TRAIN): "
-          f"min={min(eff_lens_1)}, median={int(np.median(eff_lens_1))}, max={max(eff_lens_1)}")
-    print(f"Longitud efectiva label=0 (TRAIN): "
-          f"min={min(eff_lens_0)}, median={int(np.median(eff_lens_0))}, max={max(eff_lens_0)}")
+    n_tr = len(labels_train)
+    n_va = len(labels_val)
+    pos_tr = sum(labels_train)
+    pos_va = sum(labels_val)
+
+    print(
+        f"Train: {pos_tr} acc ({100 * pos_tr / n_tr:.1f}%) | "
+        f"{n_tr - pos_tr} no-acc ({100 * (n_tr - pos_tr) / n_tr:.1f}%)"
+    )
+    print(
+        f"Val:   {pos_va} acc ({100 * pos_va / n_va:.1f}%) | "
+        f"{n_va - pos_va} no-acc ({100 * (n_va - pos_va) / n_va:.1f}%)"
+    )
+
+    train_samples_for_stats = get_samples_from_dataset(train_dataset)
+
+    eff_lens_1 = [
+        s["effective_end"] - s["start"] + 1
+        for s in train_samples_for_stats
+        if s["label"] == 1
+    ]
+
+    eff_lens_0 = [
+        s["effective_end"] - s["start"] + 1
+        for s in train_samples_for_stats
+        if s["label"] == 0
+    ]
+
+    if eff_lens_1:
+        print(
+            f"Longitud efectiva label=1 (TRAIN): "
+            f"min={min(eff_lens_1)}, "
+            f"median={int(np.median(eff_lens_1))}, "
+            f"max={max(eff_lens_1)}"
+        )
+
+    if eff_lens_0:
+        print(
+            f"Longitud efectiva label=0 (TRAIN): "
+            f"min={min(eff_lens_0)}, "
+            f"median={int(np.median(eff_lens_0))}, "
+            f"max={max(eff_lens_0)}"
+        )
 
     train_sampler = None
     shuffle_train = True
@@ -342,20 +450,26 @@ def main():
         class_counts = np.bincount(labels_train)
         class_weights_arr = 1.0 / class_counts.astype(np.float64)
         sample_weights = [class_weights_arr[l] for l in labels_train]
+
         train_sampler = WeightedRandomSampler(
             weights=sample_weights,
             num_samples=len(sample_weights),
             replacement=True,
         )
         shuffle_train = False
+
         print(f"WeightedRandomSampler activado. Pesos por clase: {class_weights_arr}")
+    else:
+        print("WeightedRandomSampler desactivado. Se usa shuffle=True.")
+
+    num_workers = 6
 
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
         shuffle=shuffle_train,
         sampler=train_sampler,
-        num_workers=2,
+        num_workers=num_workers,
         pin_memory=True,
         persistent_workers=True,
     )
@@ -364,7 +478,7 @@ def main():
         val_dataset,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=2,
+        num_workers=num_workers,
         pin_memory=True,
         persistent_workers=True,
     )
@@ -382,26 +496,57 @@ def main():
         bidirectional=bidirectional,
     ).to(device)
 
-    # BN check (debería dar 0/20 con freeze_all=True y unfreeze_layer4=False)
     model.train()
-    bn_train = sum(1 for m in model.backbone.modules()
-                   if isinstance(m, nn.BatchNorm2d) and m.training)
-    bn_total = sum(1 for m in model.backbone.modules()
-                   if isinstance(m, nn.BatchNorm2d))
+    set_backbone_bn_eval(model)
+
+    bn_train = sum(
+        1 for m in model.backbone.modules()
+        if isinstance(m, nn.BatchNorm2d) and m.training
+    )
+    bn_total = sum(
+        1 for m in model.backbone.modules()
+        if isinstance(m, nn.BatchNorm2d)
+    )
+
     print(f"[BN check] backbone BN en train: {bn_train}/{bn_total}  (esperado 0/{bn_total})")
 
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     total_params = sum(p.numel() for p in model.parameters())
-    print(f"Parámetros entrenables: {trainable_params:,} / {total_params:,} "
-          f"({100*trainable_params/total_params:.1f}%)")
 
+    print(
+        f"Parámetros entrenables: {trainable_params:,} / {total_params:,} "
+        f"({100 * trainable_params / total_params:.1f}%)"
+    )
+
+    class_counts = np.bincount(labels_train)
+    cw = torch.tensor(
+        [len(labels_train) / (2.0 * c) for c in class_counts],
+        dtype=torch.float32,
+        device=device,
+    )
+    print(f"Class weights para el loss: {cw.tolist()}")
+
+    criterion_train = nn.CrossEntropyLoss(weight=cw)
+    criterion_val = nn.CrossEntropyLoss()
     criterion_val = nn.CrossEntropyLoss()
 
-    optimizer = torch.optim.AdamW(
-        filter(lambda p: p.requires_grad, model.parameters()),
-        lr=learning_rate,
-        weight_decay=weight_decay,
-    )
+    trainable_named_params = [
+        (name, param) for name, param in model.named_parameters()
+        if param.requires_grad
+    ]
+
+    print("Parámetros entrenables:")
+    for name, param in trainable_named_params:
+        print(f"  {name}: {param.numel():,}")
+
+    head_params    = [p for n, p in trainable_named_params if "backbone" not in n]
+    backbone_params = [p for n, p in trainable_named_params if "backbone" in n]
+
+    param_groups = [{"params": head_params, "lr": learning_rate_head}]
+    if backbone_params:
+        param_groups.append({"params": backbone_params, "lr": learning_rate_layer4})
+
+    optimizer = torch.optim.AdamW(param_groups, weight_decay=weight_decay)
 
     scheduler = CosineAnnealingWithWarmup(
         optimizer,
@@ -413,10 +558,11 @@ def main():
     ckpt_dir = "/data-fast/data-server/vlopezmo/model/checkpoints"
     os.makedirs(ckpt_dir, exist_ok=True)
 
-    best_val_ap = -1.0
+    best_val_auc = -1.0
 
     for epoch in range(num_epochs):
         model.train()
+        set_backbone_bn_eval(model)
 
         running_loss = 0.0
         all_train_labels = []
@@ -428,11 +574,15 @@ def main():
             labels = labels.to(device, non_blocking=True)
 
             apply_mixup = use_mixup and np.random.random() < mixup_prob
+
             if apply_mixup:
                 lam = float(np.random.beta(mixup_alpha, mixup_alpha))
                 lam = max(lam, 1.0 - lam)
+
                 idx = torch.randperm(clips.size(0), device=device)
+
                 clips_mixed = lam * clips + (1.0 - lam) * clips[idx]
+
                 labels_one = nn.functional.one_hot(labels, 2).float()
                 labels_mixed = lam * labels_one + (1.0 - lam) * labels_one[idx]
             else:
@@ -440,14 +590,13 @@ def main():
                 labels_mixed = labels
 
             optimizer.zero_grad()
+
             outputs, _ = model(clips_mixed)
 
             if apply_mixup:
                 loss = nn.functional.cross_entropy(outputs, labels_mixed)
             else:
-                loss = nn.functional.cross_entropy(
-                    outputs, labels, label_smoothing=label_smoothing
-                )
+                loss = criterion_train(outputs, labels)
 
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
@@ -464,8 +613,8 @@ def main():
 
             if (batch_idx + 1) % 50 == 0:
                 print(
-                    f"Epoch [{epoch+1}/{num_epochs}] "
-                    f"Batch [{batch_idx+1}/{len(train_loader)}] "
+                    f"Epoch [{epoch + 1}/{num_epochs}] "
+                    f"Batch [{batch_idx + 1}/{len(train_loader)}] "
                     f"Loss: {loss.item():.4f}"
                 )
 
@@ -475,21 +624,40 @@ def main():
         train_ap = average_precision_score(all_train_labels, all_train_scores)
         train_auc = roc_auc_score(all_train_labels, all_train_scores)
 
-        val_loss, val_acc, val_f1, val_ap, val_auc, mean_attn = evaluate(
-            model, val_loader, criterion_val, device
+        print(
+            "Train probs:",
+            f"min={np.min(all_train_scores):.4f}",
+            f"max={np.max(all_train_scores):.4f}",
+            f"mean={np.mean(all_train_scores):.4f}",
+            f"std={np.std(all_train_scores):.4f}",
+        )
+
+        val_loss, val_acc, val_f1, val_ap, val_auc, mean_attn, val_cm = evaluate(
+            model,
+            val_loader,
+            criterion_val,
+            device,
         )
 
         current_lr = optimizer.param_groups[0]["lr"]
         scheduler.step()
+
         new_lr = optimizer.param_groups[0]["lr"]
 
-        print(f"\nEpoch [{epoch+1}/{num_epochs}] completed  (lr: {current_lr:.2e} → {new_lr:.2e})")
+        print(
+            f"\nEpoch [{epoch + 1}/{num_epochs}] completed "
+            f"(lr: {current_lr:.2e} → {new_lr:.2e})"
+        )
+
         print(
             f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | "
             f"Train F1: {train_f1:.4f} | Train AP: {train_ap:.4f} | Train AUC: {train_auc:.4f} || "
             f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f} | "
             f"Val F1: {val_f1:.4f} | Val AP: {val_ap:.4f} | Val AUC: {val_auc:.4f}"
         )
+
+        print("Val confusion matrix [[TN, FP], [FN, TP]]:")
+        print(val_cm)
 
         attn_table = wandb.Table(
             data=[[i, float(w)] for i, w in enumerate(mean_attn)],
@@ -499,7 +667,6 @@ def main():
         wandb.log({
             "epoch": epoch + 1,
             "lr": current_lr,
-
             "train_loss": train_loss,
             "train_acc": train_acc,
             "train_f1": train_f1,
@@ -512,60 +679,102 @@ def main():
             "val_ap": val_ap,
             "val_roc_auc": val_auc,
 
+            "val_cm_tn": int(val_cm[0, 0]),
+            "val_cm_fp": int(val_cm[0, 1]),
+            "val_cm_fn": int(val_cm[1, 0]),
+            "val_cm_tp": int(val_cm[1, 1]),
+
             "val_attn_distribution": wandb.plot.bar(
-                attn_table, "frame_idx", "attn_weight",
-                title=f"Mean temporal attention (epoch {epoch+1})"
+                attn_table,
+                "frame_idx",
+                "attn_weight",
+                title=f"Mean temporal attention (epoch {epoch + 1})",
             ),
         })
 
-        improved = val_ap > best_val_ap + min_delta
-        if improved:
-            best_val_ap = val_ap
-            early_stop_counter = 0
-            print(f"Mejora en val_ap: {val_ap:.4f}")
+        improved = val_auc > best_val_auc + min_delta
 
-            ckpt_path = os.path.join(ckpt_dir, f"{run_name}_best_val_ap.pt")
+        if improved:
+            best_val_auc = val_auc
+            early_stop_counter = 0
+
+            print(f"Mejora en val_auc: {val_auc:.4f}")
+
+            ckpt_path = os.path.join(ckpt_dir, f"{run_name}_best_val_auc.pt")
+
             torch.save({
                 "epoch": epoch + 1,
                 "model_state_dict": model.state_dict(),
                 "optimizer_state_dict": optimizer.state_dict(),
                 "scheduler_state_dict": scheduler.state_dict(),
+
+                "val_auc": val_auc,
                 "val_ap": val_ap,
                 "val_acc": val_acc,
                 "val_f1": val_f1,
-                "val_auc": val_auc,
                 "val_loss": val_loss,
-                "train_ap": train_ap,
+                "val_cm": val_cm,
+
                 "train_auc": train_auc,
+                "train_ap": train_ap,
+                "train_acc": train_acc,
+                "train_f1": train_f1,
+                "train_loss": train_loss,
+
+                "sanity_check": sanity_check,
                 "anticipation_mode": anticipation_mode,
                 "anticipation_offset": anticipation_offset,
                 "num_frames": num_frames,
                 "dropout": dropout,
                 "d_model": d_model,
+                "gru_hidden": gru_hidden,
                 "gru_num_layers": gru_num_layers,
                 "bidirectional": bidirectional,
+                "freeze_all": freeze_all,
+                "unfreeze_layer4": unfreeze_layer4,
+                "label_smoothing": label_smoothing,
+                "use_weighted_sampler": use_weighted_sampler,
                 "seed": seed,
             }, ckpt_path)
+
             print(f"Nuevo mejor modelo guardado en: {ckpt_path}")
+
         else:
             early_stop_counter += 1
-            print(f"Sin mejora en val_ap. EarlyStopping counter: {early_stop_counter}/{patience}")
+            print(
+                f"Sin mejora en val_auc. "
+                f"EarlyStopping counter: {early_stop_counter}/{patience}"
+            )
 
         last_ckpt_path = os.path.join(ckpt_dir, f"{run_name}_last.pt")
+
         torch.save({
             "epoch": epoch + 1,
             "model_state_dict": model.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
             "scheduler_state_dict": scheduler.state_dict(),
+
+            "val_auc": val_auc,
             "val_ap": val_ap,
+            "val_acc": val_acc,
+            "val_f1": val_f1,
+            "val_loss": val_loss,
+            "val_cm": val_cm,
+
+            "train_auc": train_auc,
             "train_ap": train_ap,
+            "train_acc": train_acc,
+            "train_f1": train_f1,
+            "train_loss": train_loss,
+
+            "sanity_check": sanity_check,
             "anticipation_mode": anticipation_mode,
             "anticipation_offset": anticipation_offset,
             "seed": seed,
         }, last_ckpt_path)
 
         if early_stop_counter >= patience:
-            print(f"Early stopping activado en epoch {epoch+1}")
+            print(f"Early stopping activado en epoch {epoch + 1}")
             break
 
     wandb.finish()

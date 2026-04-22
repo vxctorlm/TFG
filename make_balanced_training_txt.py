@@ -33,8 +33,9 @@ def generate_windows_for_video(
     text,
     window_len=64,
     stride=16,
-    horizon=30,
-    negative_margin=30,
+    positive_horizon=30,
+    gray_zone=30,
+    negative_max_distance=120,
     max_neg_per_video=2,
     max_pos_per_video=2,
     seed=42,
@@ -43,16 +44,22 @@ def generate_windows_for_video(
     Genera ventanas antes del accidente.
 
     Definición:
-      - label = 1 si el accidente ocurre dentro de los próximos `horizon` frames.
-      - label = 0 si el accidente ocurre entre `horizon + 1` y
-        `horizon + negative_margin` frames después del final de la ventana.
+      - label = 1 si distance = toa - end está entre 1 y positive_horizon.
+      - se descartan ventanas con distance entre positive_horizon+1 y
+        positive_horizon+gray_zone.
+      - label = 0 si distance está entre positive_horizon+gray_zone+1
+        y negative_max_distance.
 
-    Ejemplo con horizon=30 y negative_margin=30:
-      - positivo: distance = toa - end está entre 1 y 30
-      - negativo: distance = toa - end está entre 31 y 60
+    Ejemplo:
+      positive_horizon = 30
+      gray_zone = 30
+      negative_max_distance = 120
 
-    Esto evita usar negativos muy tempranos del vídeo, que eran los que generaban
-    el sesgo fuerte de start frame.
+      positivo:   distance 1-30
+      descartado: distance 31-60
+      negativo:   distance 61-120
+
+    Esto evita que positivos y negativos sean ventanas casi idénticas.
     """
 
     rng = random.Random(seed + hash(video_id) % 10_000_000)
@@ -65,6 +72,8 @@ def generate_windows_for_video(
     if max_end < window_len:
         return []
 
+    negative_min_distance = positive_horizon + gray_zone + 1
+
     start = 1
 
     while True:
@@ -75,12 +84,12 @@ def generate_windows_for_video(
 
         distance = toa - end
 
-        if 1 <= distance <= horizon:
+        if 1 <= distance <= positive_horizon:
             candidates_pos.append(
                 make_line(video_id, 1, start, end, toa, text)
             )
 
-        elif horizon < distance <= horizon + negative_margin:
+        elif negative_min_distance <= distance <= negative_max_distance:
             candidates_neg.append(
                 make_line(video_id, 0, start, end, toa, text)
             )
@@ -155,7 +164,7 @@ def describe_distances(lines):
 
 
 def main():
-    input_txt = Path("/data-fast/data-server/vlopezmo/model/training/training.txt")
+    input_txt = Path("/data-fast/data-server/vlopezmo/model/training/training_full.txt")
     output_txt = Path("/data-fast/data-server/vlopezmo/model/training/training_balanced.txt")
 
     # Parámetros principales
@@ -163,12 +172,15 @@ def main():
     stride = 16
 
     # label 1: accidente en los próximos 30 frames
-    horizon = 30
+    positive_horizon = 30
 
-    # label 0: accidente entre 31 y 60 frames después del clip
-    negative_margin = 15
+    # distance 31-60 se descarta como zona gris
+    gray_zone = 30
 
-    # Mismo máximo por clase y vídeo para no desbalancear
+    # label 0: accidente entre 61 y 120 frames después del clip
+    negative_max_distance = 120
+
+    # Máximo por clase y vídeo
     max_neg_per_video = 2
     max_pos_per_video = 2
 
@@ -201,8 +213,9 @@ def main():
             text=sample["text"],
             window_len=window_len,
             stride=stride,
-            horizon=horizon,
-            negative_margin=negative_margin,
+            positive_horizon=positive_horizon,
+            gray_zone=gray_zone,
+            negative_max_distance=negative_max_distance,
             max_neg_per_video=max_neg_per_video,
             max_pos_per_video=max_pos_per_video,
             seed=seed,
@@ -247,10 +260,18 @@ def main():
     print("Configuración:")
     print(f"  window_len = {window_len}")
     print(f"  stride = {stride}")
-    print(f"  horizon = {horizon}")
-    print(f"  negative_margin = {negative_margin}")
+    print(f"  positive_horizon = {positive_horizon}")
+    print(f"  gray_zone = {gray_zone}")
+    print(f"  negative_max_distance = {negative_max_distance}")
     print(f"  max_pos_per_video = {max_pos_per_video}")
     print(f"  max_neg_per_video = {max_neg_per_video}")
+    print()
+    print(f"  positivos:   distance 1-{positive_horizon}")
+    print(f"  descartados: distance {positive_horizon + 1}-{positive_horizon + gray_zone}")
+    print(
+        f"  negativos:   distance "
+        f"{positive_horizon + gray_zone + 1}-{negative_max_distance}"
+    )
     print()
 
     describe_starts(new_lines)
