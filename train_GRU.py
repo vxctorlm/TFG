@@ -202,7 +202,7 @@ def main():
     # ── CONFIG PRINCIPAL ──────────────────────────────────────────────────────
     sanity_check = False
 
-    batch_size = 16
+    batch_size = 32
     num_epochs = 30
     weight_decay = 1e-4
     num_frames = 16
@@ -250,7 +250,7 @@ def main():
     bidirectional = True
 
     # Regularización
-    use_mixup = False
+    use_mixup = True
     mixup_alpha = 0.2
     mixup_prob = 0.5
 
@@ -259,7 +259,7 @@ def main():
     class_weights = None
 
     # Early stopping por AUC
-    patience = 6
+    patience = 5
     min_delta = 0.001
     early_stop_counter = 0
 
