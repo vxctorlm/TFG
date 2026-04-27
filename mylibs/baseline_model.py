@@ -14,7 +14,8 @@ from model.mylibs.transformer import TransformerEncoder, TransformerEncoderLayer
 
 2. ResNet-18: extractor de características visuales
    - Se aplica frame a frame.
-   - Su función es transformar cada frame en un vector representativo de características visuales.
+   - Cargado con pesos ImageNet preentrenados.
+   - Las capas de bajo nivel (conv1, layer1, layer2) se congelan opcionalmente.
 
 2.1 Forward de la parte espacial
    - Reorganiza la entrada para tratar cada frame como una imagen independiente:
@@ -38,7 +39,7 @@ from model.mylibs.transformer import TransformerEncoder, TransformerEncoderLayer
 
 7. Pooling temporal
    - Resume toda la secuencia temporal en un único vector representativo del clip.
-   - En este baseline se utiliza mean pooling sobre la dimensión temporal.
+   - Se utiliza mean pooling sobre la dimensión temporal.
 
 8. Clasificador final
    - A partir del vector global del clip, se realiza la clasificación binaria.
@@ -52,82 +53,94 @@ from model.mylibs.transformer import TransformerEncoder, TransformerEncoderLayer
      - clase 1: accidente
 """
 
+
 class PositionalEncoding(nn.Module):
-   def __init__(self, d_model: int, max_len: int = 500):
-      super().__init__()
+    def __init__(self, d_model: int, max_len: int = 500):
+        super().__init__()
 
-      pe = torch.zeros(max_len, d_model)
-      position = torch.arange(0, max_len, dtype=torch.float32).unsqueeze(1)
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float32).unsqueeze(1)
 
-      div_term = torch.exp(
-         torch.arange(0, d_model, 2, dtype=torch.float32) * (-math.log(10000.0) / d_model)
-      )
+        div_term = torch.exp(
+            torch.arange(0, d_model, 2, dtype=torch.float32) * (-math.log(10000.0) / d_model)
+        )
 
-      pe[:, 0::2] = torch.sin(position * div_term)
-      pe[:, 1::2] = torch.cos(position * div_term)
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
 
-      pe = pe.unsqueeze(0) # [1, T, D]
-      self.register_buffer("pe", pe)
+        pe = pe.unsqueeze(0)  # [1, T, D]
+        self.register_buffer("pe", pe)
 
-   def forward(self, x): # x: [B, T, D]
-      t = x.size(1)
-      return x + self.pe[:, :t]
+    def forward(self, x):  # x: [B, T, D]
+        t = x.size(1)
+        return x + self.pe[:, :t]
 
 
 class BaselineResNetTransformer(nn.Module):
-   def __init__(self, num_classes=2, d_model=256, nhead=4, num_layers=2, dim_feedforward=512, dropout=0.1,):
-      super().__init__()
+    def __init__(
+        self,
+        num_classes=2,
+        d_model=256,
+        nhead=4,
+        num_layers=2,
+        dim_feedforward=512,
+        dropout=0.3,
+        pretrained=True,
+        freeze_early=True,
+    ):
+        super().__init__()
 
-      # Backbone espacial
-      self.backbone = resnet18(num_classes=1000)
+        # Backbone espacial con pesos ImageNet preentrenados
+        self.backbone = resnet18(pretrained=pretrained, freeze_early=freeze_early)
 
-      # Proyección de 512 -> d_model con normalización, activación y dropout
-      self.proj = nn.Sequential(
-         nn.Linear(512, d_model),
-         nn.LayerNorm(d_model),
-         nn.ReLU(inplace=True),
-         nn.Dropout(dropout),
-      )
-      # Positional encoding temporal
-      self.pos_encoding = PositionalEncoding(d_model=d_model, max_len=200)
+        # Proyección de 512 -> d_model con normalización, activación y dropout
+        self.proj = nn.Sequential(
+            nn.Linear(512, d_model),
+            nn.LayerNorm(d_model),
+            nn.ReLU(inplace=True),
+            nn.Dropout(dropout),
+        )
 
-      # Transformer temporal
-      encoder_layer = TransformerEncoderLayer(
-         d_model=d_model,
-         nhead=nhead,
-         dim_feedforward=dim_feedforward,
-         dropout=dropout,
-         batch_first=True,
-      )
+        # Positional encoding temporal
+        self.pos_encoding = PositionalEncoding(d_model=d_model, max_len=200)
 
-      self.transformer = TransformerEncoder(
-         encoder_layer,
-         num_layers=num_layers,
-      )
+        # Transformer temporal
+        encoder_layer = TransformerEncoderLayer(
+            d_model=d_model,
+            nhead=nhead,
+            dim_feedforward=dim_feedforward,
+            dropout=dropout,
+            batch_first=True,
+        )
 
-      self.dropout = nn.Dropout(dropout)
-      self.classifier = nn.Linear(d_model, num_classes)
+        self.transformer = TransformerEncoder(
+            encoder_layer,
+            num_layers=num_layers,
+        )
 
-   def forward(self, x): # x: [B, T, C, H, W]
-      b, t, c, h, w = x.shape
+        self.dropout = nn.Dropout(dropout)
+        self.classifier = nn.Linear(d_model, num_classes)
 
-      # juntamos batch y tiempo para pasar frame a frame por ResNet
-      x = x.reshape(b * t, c, h, w)
+    def forward(self, x):  # x: [B, T, C, H, W]
+        b, t, c, h, w = x.shape
 
-      # [B*T, 512]
-      feats = self.backbone.forward_features(x)
+        # Juntamos batch y tiempo para pasar frame a frame por ResNet
+        x = x.reshape(b * t, c, h, w)
 
-      # [B*T, d_model]
-      feats = self.proj(feats)
+        # [B*T, 512]
+        feats = self.backbone.forward_features(x)
 
-      # [B, T, d_model]
-      feats = feats.reshape(b, t, -1)
+        # [B*T, d_model]
+        feats = self.proj(feats)
 
-      feats = self.pos_encoding(feats)
-      feats = self.transformer(feats)
+        # [B, T, d_model]
+        feats = feats.reshape(b, t, -1)
 
-      # Mean pooling temporal para obtener una representación global del clip
-      pooled = feats.mean(dim=1)
+        feats = self.pos_encoding(feats)
+        feats = self.transformer(feats)
 
-      logits = self.classifier(self.dropout(pooled))  # [B, 2]
-      return logits
+        # Mean pooling temporal para obtener una representación global del clip
+        pooled = feats.mean(dim=1)
+
+        logits = self.classifier(self.dropout(pooled))  # [B, 2]
+        return logits

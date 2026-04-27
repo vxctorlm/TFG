@@ -4,13 +4,9 @@ import random
 
 
 def main():
-    # -----------------------------
-    # Configuración
-    # -----------------------------
-    input_txt = Path("/data-fast/data-server/vlopezmo/model/training/training.txt")
+    input_txt = Path("/data-fast/data-server/vlopezmo/model/training/training_balanced.txt")
     output_train_txt = Path("/data-fast/data-server/vlopezmo/model/training/training_train.txt")
     output_val_txt = Path("/data-fast/data-server/vlopezmo/model/training/training_val.txt")
-
     val_ratio = 0.2
     seed = 42
 

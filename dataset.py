@@ -42,6 +42,8 @@ class AccidentClipDataset(Dataset):
 
     def _load_samples(self):
         samples = []
+        # FIX: contamos descartados por label para detectar pérdidas silenciosas de positivos
+        discarded_counts = {0: 0, 1: 0}
 
         with open(self.txt_path, "r", encoding="utf-8") as f:
             for line in f:
@@ -71,9 +73,19 @@ class AccidentClipDataset(Dataset):
 
                 # Filtrar muestras inválidas
                 if self.drop_invalid_samples and effective_end < sample["start"]:
+                    discarded_counts[sample["label"]] += 1
                     continue
 
                 samples.append(sample)
+
+        total_discarded = sum(discarded_counts.values())
+        if total_discarded > 0:
+            print(
+                f"[AccidentClipDataset] Muestras descartadas (effective_end < start): "
+                f"{total_discarded} total "
+                f"(label=0: {discarded_counts[0]}, label=1: {discarded_counts[1]}) "
+                f"← revisar si label=1 > 0 con anticipation_mode=True"
+            )
 
         return samples
 
@@ -87,27 +99,26 @@ class AccidentClipDataset(Dataset):
         if total_len <= 0:
             raise ValueError(f"Intervalo inválido: start={start}, end={end}")
 
-        if self.num_frames is None or self.num_frames >= total_len:
+        # Si hay menos frames disponibles que num_frames, samplear CON REPETICIÓN
+        # para garantizar siempre la misma longitud de salida (necesario para batch).
+        # FIX: usar np.round antes de astype(int) para evitar sesgo hacia el inicio
+        # del clip que produce .astype(int) (trunca en lugar de redondear).
+        if self.num_frames is not None and total_len < self.num_frames:
+            base_indices = np.linspace(start, end, self.num_frames)
+            return np.round(base_indices).astype(int)
+
+        if self.num_frames is None:
             return total_frames
 
-        # Muestreo base uniforme
         base_indices = np.linspace(start, end, self.num_frames)
 
-        # Val/test: determinista
+        # Val/test: determinista, sin augmentation
         if not (self.train and self.use_temporal_augmentation):
-            return base_indices.astype(int)
+            return np.round(base_indices).astype(int)
 
         indices = base_indices.copy()
 
-        # Guiar suavemente hacia TOA, pero solo si TOA cae dentro del rango visible
-        if self.use_toa_guided_sampling:
-            current_center = indices.mean()
-            toa_clamped = min(max(toa, start), end)
-            desired_shift = toa_clamped - current_center
-            shift = self.toa_center_strength * desired_shift
-            indices = indices + shift
-
-        # Jitter temporal
+        # 1. Jitter temporal: añade variabilidad entre epochs
         if self.temporal_max_jitter > 0:
             jitter = np.random.randint(
                 -self.temporal_max_jitter,
@@ -116,9 +127,37 @@ class AccidentClipDataset(Dataset):
             )
             indices = indices + jitter
 
+        # 2. TOA-guided shift: guía suavemente el centro hacia el momento del accidente.
+        if self.use_toa_guided_sampling:
+            current_center = indices.mean()
+            toa_clamped = min(max(toa, start), end)
+            desired_shift = toa_clamped - current_center
+            shift = self.toa_center_strength * desired_shift
+            indices = indices + shift
+
         indices = np.clip(indices, start, end)
         indices = np.sort(indices)
         indices = indices.astype(int)
+
+        # Eliminar duplicados. tras clip+sort pueden aparecer frames repetidos
+        indices = np.unique(indices)
+        if len(indices) < self.num_frames:
+            indices = np.round(np.interp(
+                np.linspace(0, len(indices) - 1, self.num_frames),
+                np.arange(len(indices)),
+                indices,
+            )).astype(int)
+
+        # 3. Temporal reversal (p=0.08): invierte el orden del clip.
+        """
+        if np.random.random() < 0.08:
+            indices = indices[::-1].copy()
+        """
+
+        # 4. Frame dropout (p=0.10): reemplaza un frame aleatorio por el anterior.
+        if np.random.random() < 0.10:
+            drop_idx = np.random.randint(1, self.num_frames)
+            indices[drop_idx] = indices[drop_idx - 1]
 
         return indices
 

@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torchvision.models as tvm
 
 
 def conv3x3(in_planes, out_planes, stride=1):
@@ -102,5 +103,47 @@ class ResNet(nn.Module):
         return x
 
 
-def resnet18(num_classes=1000):
-    return ResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes)
+def resnet18(pretrained: bool = True, freeze_early: bool = False, freeze_all: bool = False, num_classes=1000):
+    """
+    ResNet-18 con opción de pesos ImageNet preentrenados.
+
+    Args:
+        pretrained:   Si True, carga pesos ImageNet1K.
+        freeze_early: Si True, congela conv1 + bn1 + layer1 + layer2 (features de bajo nivel).
+                      Útil como punto intermedio: el backbone aprende pero más despacio.
+        freeze_all:   Si True, congela TODO el backbone. Solo se entrenan proj + GRU/Transformer
+                      + classifier. Recomendado cuando el dataset es pequeño y el backbone
+                      ya sobreajusta con freeze_early. Tiene prioridad sobre freeze_early.
+        num_classes:  Número de clases de la fc final (no se usa en forward_features).
+
+    Modos de uso habituales:
+        freeze_all=True                  → dataset pequeño, overfitting severo (recomendado ahora)
+        freeze_early=True, freeze_all=False → dataset mediano, fine-tuning parcial
+        freeze_early=False, freeze_all=False → dataset grande, fine-tuning completo
+    """
+    model = ResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes)
+
+    if pretrained:
+        ref = tvm.resnet18(weights=tvm.ResNet18_Weights.IMAGENET1K_V1)
+        model.load_state_dict(ref.state_dict())
+        print("[resnet18] Pesos ImageNet cargados correctamente.")
+
+    if freeze_all:
+        # Congela todo el backbone: solo proj + módulo temporal + classifier se entrenan.
+        # Elimina la fuente principal de memorización cuando el dataset es pequeño.
+        for param in model.parameters():
+            param.requires_grad = False
+        print("[resnet18] Backbone completo congelado (freeze_all=True).")
+    elif freeze_early:
+        # Congela solo las capas de bajo nivel: bordes, texturas, gradientes.
+        # layer3 y layer4 (semántica de alto nivel) se dejan libres para fine-tuning.
+        layers_to_freeze = [model.conv1, model.bn1, model.layer1, model.layer2]
+        for layer in layers_to_freeze:
+            for param in layer.parameters():
+                param.requires_grad = False
+        print("[resnet18] conv1, bn1, layer1, layer2 congelados (freeze_early=True).")
+
+    # La fc no se usa en forward_features — la eliminamos para ahorrar memoria
+    model.fc = nn.Identity()
+
+    return model
