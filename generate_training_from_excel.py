@@ -1,12 +1,3 @@
-"""
-Genera training.txt desde dada_text_annotations.xlsx.
-
-Formato de salida (igual que el training.txt original):
-  video_id label start end toa,text
-
-Solo incluye vídeos con accidente (whether an accident occurred == 1)
-y con toa > 0.
-"""
 import pandas as pd
 from pathlib import Path
 from collections import defaultdict
@@ -19,7 +10,7 @@ def main():
 
     df = pd.read_excel(excel_path, sheet_name="Sheet1", header=0)
 
-    # Construir video_id: índice dentro del tipo (orden de aparición en Excel)
+    # Construir video_id: índice dentro del tipo 
     df = df.sort_values(["type", "video"]).reset_index(drop=True)
     df["vid_num"] = df.groupby("type").cumcount() + 1
     df["video_id"] = df["type"].astype(str) + "/" + df["vid_num"].apply(lambda x: f"{x:03d}")

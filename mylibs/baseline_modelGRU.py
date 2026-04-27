@@ -39,6 +39,8 @@ class BaselineResNetGRU(nn.Module):
         freeze_early=False,
         freeze_all=True,
         unfreeze_layer4=False,
+        # CHANGE 4: "last_block" (anterior) | "full_layer4" | "layer3_layer4"
+        unfreeze_mode="last_block",
         bidirectional=True,
     ):
         super().__init__()
@@ -46,6 +48,7 @@ class BaselineResNetGRU(nn.Module):
         # Guardamos flags para el override de train()
         self.freeze_all = freeze_all
         self.unfreeze_layer4 = unfreeze_layer4
+        self.unfreeze_mode = unfreeze_mode
 
         # Backbone visual
         self.backbone = resnet18(
@@ -55,10 +58,25 @@ class BaselineResNetGRU(nn.Module):
         )
 
         if unfreeze_layer4:
-            #for p in self.backbone.layer4.parameters():
-            for p in self.backbone.layer4[1].parameters():
-                p.requires_grad = True
-            print("[BaselineResNetGRU] layer4 descongelado.")
+            if unfreeze_mode == "last_block":
+                # Comportamiento anterior: solo layer4[1]
+                for p in self.backbone.layer4[1].parameters():
+                    p.requires_grad = True
+                print("[BaselineResNetGRU] Descongelado: layer4[1] (último bloque).")
+            elif unfreeze_mode == "full_layer4":
+                # CHANGE 4 (opción A): layer4 completo (ambos bloques)
+                for p in self.backbone.layer4.parameters():
+                    p.requires_grad = True
+                print("[BaselineResNetGRU] Descongelado: layer4 completo.")
+            elif unfreeze_mode == "layer3_layer4":
+                # CHANGE 4 (opción B): layer3 + layer4 completos
+                for p in self.backbone.layer3.parameters():
+                    p.requires_grad = True
+                for p in self.backbone.layer4.parameters():
+                    p.requires_grad = True
+                print("[BaselineResNetGRU] Descongelado: layer3 + layer4.")
+            else:
+                raise ValueError(f"unfreeze_mode desconocido: {unfreeze_mode}")
 
         # Proyección compacta y estable
         self.proj = nn.Sequential(
@@ -80,7 +98,8 @@ class BaselineResNetGRU(nn.Module):
 
         gru_out_dim = gru_hidden * 2 if bidirectional else gru_hidden
 
-        # Residual temporal
+        # Residual temporal: proyecta d_model → gru_out_dim si no coinciden
+        # CHANGE 2: con bidirectional=True gru_out_dim=256 != d_model=128, siempre habrá Linear
         self.residual_proj = (
             nn.Identity() if gru_out_dim == d_model else nn.Linear(d_model, gru_out_dim)
         )
@@ -112,19 +131,33 @@ class BaselineResNetGRU(nn.Module):
             self.backbone.eval()
 
             if self.unfreeze_layer4:
-                # FIX: activar solo layer4[1] (último bloque), que es el único
-                # cuyos parámetros tienen requires_grad=True. Activar layer4 entero
-                # pondría en train() los BN/Dropout de layer4[0], que no se actualiza,
-                # introduciendo variabilidad estocástica innecesaria.
-                self.backbone.layer4[1].train(mode)
+                if self.unfreeze_mode == "last_block":
+                    # Solo el último bloque de layer4
+                    self.backbone.layer4[1].train(mode)
+                    for m in self.backbone.layer4[1].modules():
+                        if isinstance(m, nn.BatchNorm2d):
+                            m.eval()
 
-                # Mantener BN de layer4[1] en eval también (estadísticas pre-entrenadas)
-                for m in self.backbone.layer4[1].modules():
-                    if isinstance(m, nn.BatchNorm2d):
-                        m.eval()
+                elif self.unfreeze_mode == "full_layer4":
+                    # CHANGE 4: layer4 completo en train, BN en eval
+                    self.backbone.layer4.train(mode)
+                    for m in self.backbone.layer4.modules():
+                        if isinstance(m, nn.BatchNorm2d):
+                            m.eval()
+
+                elif self.unfreeze_mode == "layer3_layer4":
+                    # CHANGE 4: layer3 + layer4 en train, BN en eval
+                    self.backbone.layer3.train(mode)
+                    self.backbone.layer4.train(mode)
+                    for m in self.backbone.layer3.modules():
+                        if isinstance(m, nn.BatchNorm2d):
+                            m.eval()
+                    for m in self.backbone.layer4.modules():
+                        if isinstance(m, nn.BatchNorm2d):
+                            m.eval()
 
         return self
-
+        
     def forward(self, x):
         """
         x: [B, T, C, H, W]
