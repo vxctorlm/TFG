@@ -14,71 +14,54 @@ class TemporalAttentionPooling(nn.Module):
             nn.Linear(attn_hidden, 1),
         )
 
-    def forward(self, x):
-        """
-        x: [B, T, D]
-        returns:
-            pooled: [B, D]
-            weights: [B, T]
-        """
-        scores = self.attn(x).squeeze(-1)               # [B, T]
-        weights = torch.softmax(scores, dim=1)          # [B, T]
+    def forward(self, x: torch.Tensor):
+        scores = self.attn(x).squeeze(-1)          # [B, T]
+        weights = torch.softmax(scores, dim=1)     # [B, T]
         pooled = torch.sum(x * weights.unsqueeze(-1), dim=1)
         return pooled, weights
 
 
 class BaselineResNetGRU(nn.Module):
+    """
+    ResNet18 + GRU causal para anticipación de accidentes.
+
+    Por defecto bidirectional=False para no depender de contexto futuro dentro de la secuencia.
+    El modelo recibe una ventana ya observada [B,T,C,H,W] y predice riesgo futuro.
+    """
+
     def __init__(
         self,
-        num_classes=2,
-        d_model=128,
-        gru_hidden=128,
-        gru_layers=1,
-        dropout=0.4,
-        pretrained=True,
-        freeze_early=False,
-        freeze_all=True,
-        unfreeze_layer4=False,
-        # CHANGE 4: "last_block" (anterior) | "full_layer4" | "layer3_layer4"
-        unfreeze_mode="last_block",
-        bidirectional=True,
+        num_classes: int = 2,
+        d_model: int = 128,
+        gru_hidden: int = 128,
+        gru_layers: int = 1,
+        dropout: float = 0.3,
+        pretrained: bool = True,
+        freeze_early: bool = False,
+        freeze_all: bool = True,
+        unfreeze_layer4: bool = True,
+        unfreeze_mode: str = "full_layer4",
+        bidirectional: bool = False,
+        pooling: str = "attention",  # "attention" o "last"
     ):
         super().__init__()
 
-        # Guardamos flags para el override de train()
+        if pooling not in {"attention", "last"}:
+            raise ValueError("pooling debe ser 'attention' o 'last'")
+
         self.freeze_all = freeze_all
         self.unfreeze_layer4 = unfreeze_layer4
         self.unfreeze_mode = unfreeze_mode
+        self.bidirectional = bidirectional
+        self.pooling = pooling
 
-        # Backbone visual
         self.backbone = resnet18(
             pretrained=pretrained,
             freeze_early=freeze_early,
             freeze_all=freeze_all,
         )
+        self._apply_unfreeze_policy()
 
-        if unfreeze_layer4:
-            if unfreeze_mode == "last_block":
-                # Comportamiento anterior: solo layer4[1]
-                for p in self.backbone.layer4[1].parameters():
-                    p.requires_grad = True
-                print("[BaselineResNetGRU] Descongelado: layer4[1] (último bloque).")
-            elif unfreeze_mode == "full_layer4":
-                # CHANGE 4 (opción A): layer4 completo (ambos bloques)
-                for p in self.backbone.layer4.parameters():
-                    p.requires_grad = True
-                print("[BaselineResNetGRU] Descongelado: layer4 completo.")
-            elif unfreeze_mode == "layer3_layer4":
-                # CHANGE 4 (opción B): layer3 + layer4 completos
-                for p in self.backbone.layer3.parameters():
-                    p.requires_grad = True
-                for p in self.backbone.layer4.parameters():
-                    p.requires_grad = True
-                print("[BaselineResNetGRU] Descongelado: layer3 + layer4.")
-            else:
-                raise ValueError(f"unfreeze_mode desconocido: {unfreeze_mode}")
-
-        # Proyección compacta y estable
         self.proj = nn.Sequential(
             nn.Linear(512, d_model),
             nn.LayerNorm(d_model),
@@ -86,7 +69,6 @@ class BaselineResNetGRU(nn.Module):
             nn.Dropout(dropout),
         )
 
-        # GRU temporal pequeña
         self.gru = nn.GRU(
             input_size=d_model,
             hidden_size=gru_hidden,
@@ -96,33 +78,52 @@ class BaselineResNetGRU(nn.Module):
             bidirectional=bidirectional,
         )
 
-        gru_out_dim = gru_hidden * 2 if bidirectional else gru_hidden
-
-        # Residual temporal: proyecta d_model → gru_out_dim si no coinciden
-        # CHANGE 2: con bidirectional=True gru_out_dim=256 != d_model=128, siempre habrá Linear
-        self.residual_proj = (
-            nn.Identity() if gru_out_dim == d_model else nn.Linear(d_model, gru_out_dim)
-        )
-
+        gru_out_dim = gru_hidden * (2 if bidirectional else 1)
+        self.residual_proj = nn.Identity() if gru_out_dim == d_model else nn.Linear(d_model, gru_out_dim)
         self.temporal_norm = nn.LayerNorm(gru_out_dim)
         self.temporal_dropout = nn.Dropout(dropout)
 
-        # Attention pooling en lugar de mean pooling
-        self.pool = TemporalAttentionPooling(
+        self.attention_pool = TemporalAttentionPooling(
             dim=gru_out_dim,
             attn_hidden=max(32, gru_out_dim // 2),
             dropout=0.2,
         )
 
-        # Head final
         self.classifier = nn.Sequential(
             nn.LayerNorm(gru_out_dim),
             nn.Dropout(dropout),
-            nn.Linear(gru_out_dim, gru_out_dim // 2),
+            nn.Linear(gru_out_dim, max(32, gru_out_dim // 2)),
             nn.GELU(),
             nn.Dropout(dropout),
-            nn.Linear(gru_out_dim // 2, num_classes),
+            nn.Linear(max(32, gru_out_dim // 2), num_classes),
         )
+
+    def _apply_unfreeze_policy(self) -> None:
+        if not self.unfreeze_layer4:
+            return
+
+        if self.unfreeze_mode == "last_block":
+            for p in self.backbone.layer4[1].parameters():
+                p.requires_grad = True
+            print("[BaselineResNetGRU] Descongelado: layer4[1].")
+        elif self.unfreeze_mode == "full_layer4":
+            for p in self.backbone.layer4.parameters():
+                p.requires_grad = True
+            print("[BaselineResNetGRU] Descongelado: layer4 completo.")
+        elif self.unfreeze_mode == "layer3_layer4":
+            for p in self.backbone.layer3.parameters():
+                p.requires_grad = True
+            for p in self.backbone.layer4.parameters():
+                p.requires_grad = True
+            print("[BaselineResNetGRU] Descongelado: layer3 + layer4.")
+        else:
+            raise ValueError(f"unfreeze_mode desconocido: {self.unfreeze_mode}")
+
+    @staticmethod
+    def _set_bn_eval(module: nn.Module) -> None:
+        for m in module.modules():
+            if isinstance(m, nn.BatchNorm2d):
+                m.eval()
 
     def train(self, mode: bool = True):
         super().train(mode)
@@ -132,58 +133,36 @@ class BaselineResNetGRU(nn.Module):
 
             if self.unfreeze_layer4:
                 if self.unfreeze_mode == "last_block":
-                    # Solo el último bloque de layer4
                     self.backbone.layer4[1].train(mode)
-                    for m in self.backbone.layer4[1].modules():
-                        if isinstance(m, nn.BatchNorm2d):
-                            m.eval()
-
+                    self._set_bn_eval(self.backbone.layer4[1])
                 elif self.unfreeze_mode == "full_layer4":
-                    # CHANGE 4: layer4 completo en train, BN en eval
                     self.backbone.layer4.train(mode)
-                    for m in self.backbone.layer4.modules():
-                        if isinstance(m, nn.BatchNorm2d):
-                            m.eval()
-
+                    self._set_bn_eval(self.backbone.layer4)
                 elif self.unfreeze_mode == "layer3_layer4":
-                    # CHANGE 4: layer3 + layer4 en train, BN en eval
                     self.backbone.layer3.train(mode)
                     self.backbone.layer4.train(mode)
-                    for m in self.backbone.layer3.modules():
-                        if isinstance(m, nn.BatchNorm2d):
-                            m.eval()
-                    for m in self.backbone.layer4.modules():
-                        if isinstance(m, nn.BatchNorm2d):
-                            m.eval()
-
+                    self._set_bn_eval(self.backbone.layer3)
+                    self._set_bn_eval(self.backbone.layer4)
         return self
-        
-    def forward(self, x):
-        """
-        x: [B, T, C, H, W]
-        returns:
-            logits:       [B, num_classes]
-            attn_weights: [B, T]
-        """
+
+    def forward(self, x: torch.Tensor):
         b, t, c, h, w = x.shape
 
-        # Backbone frame a frame
         x = x.reshape(b * t, c, h, w)
-        feats = self.backbone.forward_features(x)
-        feats = self.proj(feats)
-        feats = feats.reshape(b, t, -1)
+        feats = self.backbone.forward_features(x)  # [B*T, 512]
+        feats = self.proj(feats)                   # [B*T, d_model]
+        feats = feats.reshape(b, t, -1)            # [B, T, d_model]
 
-        # Rama temporal
-        gru_out, _ = self.gru(feats)                    # [B, T, gru_out_dim]
-
-        # Residual desde las features proyectadas
-        residual = self.residual_proj(feats)            # [B, T, gru_out_dim]
-        temporal = self.temporal_norm(gru_out + residual)
+        gru_out, _ = self.gru(feats)
+        temporal = self.temporal_norm(gru_out + self.residual_proj(feats))
         temporal = self.temporal_dropout(temporal)
 
-        # Pooling temporal aprendido
-        pooled, attn_weights = self.pool(temporal)      # [B, gru_out_dim], [B, T]
+        if self.pooling == "attention":
+            pooled, attn_weights = self.attention_pool(temporal)
+        else:
+            pooled = temporal[:, -1, :]
+            attn_weights = torch.zeros(b, t, device=x.device, dtype=temporal.dtype)
+            attn_weights[:, -1] = 1.0
 
         logits = self.classifier(pooled)
-
         return logits, attn_weights
