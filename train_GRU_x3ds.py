@@ -17,16 +17,12 @@ from sklearn.metrics import (
 )
 
 from model.dataset import AccidentClipDataset
-from model.mylibs.baseline_modelGRU import BaselineResNetGRU
+from model.mylibs.x3d_gru import X3DGRU
 
 
-"""
-El modelo clasifica ventanas temporales previas al accidente como cercanas o lejanas al evento crítico.
-El sistema aprende a distinguir segmentos de vídeo cercanos a un evento crítico frente a segmentos más alejados.
-"""
 def set_backbone_bn_eval(model):
     for m in model.backbone.modules():
-        if isinstance(m, nn.BatchNorm2d):
+        if isinstance(m, (nn.BatchNorm3d, nn.BatchNorm2d, nn.BatchNorm1d)):
             m.eval()
 
 
@@ -114,7 +110,7 @@ def evaluate(model, dataloader, criterion, device, split_name="val"):
     attn_entropy = float(-np.sum(mean_attn * np.log(mean_attn + 1e-8)))
 
     print(
-        f"[{split_name} Attention] peak_frame={attn_peak} | "
+        f"[{split_name} Attention] peak_subclip={attn_peak} | "
         f"max={attn_max:.4f} | std={attn_std:.4f} | entropy={attn_entropy:.4f} "
         f"(uniform={np.log(len(mean_attn)):.4f})"
     )
@@ -148,7 +144,7 @@ def evaluate(model, dataloader, criterion, device, split_name="val"):
         attn_entropy_pos = float(-np.sum(mean_attn_pos * np.log(mean_attn_pos + 1e-8)))
         attn_peak_pos = int(mean_attn_pos.argmax())
         print(
-            f"[{split_name} Attention POS] peak_frame={attn_peak_pos} | "
+            f"[{split_name} Attention POS] peak_subclip={attn_peak_pos} | "
             f"entropy={attn_entropy_pos:.4f}"
         )
 
@@ -157,7 +153,7 @@ def evaluate(model, dataloader, criterion, device, split_name="val"):
         attn_entropy_neg = float(-np.sum(mean_attn_neg * np.log(mean_attn_neg + 1e-8)))
         attn_peak_neg = int(mean_attn_neg.argmax())
         print(
-            f"[{split_name} Attention NEG] peak_frame={attn_peak_neg} | "
+            f"[{split_name} Attention NEG] peak_subclip={attn_peak_neg} | "
             f"entropy={attn_entropy_neg:.4f}"
         )
 
@@ -186,7 +182,7 @@ def evaluate(model, dataloader, criterion, device, split_name="val"):
 
 def build_clip_transform(
     train=False,
-    image_size=(224, 224),
+    image_size=(160, 160),
     enable_augmentation=False,
     use_hflip=False,
     use_color_jitter=False,
@@ -233,8 +229,8 @@ def build_clip_transform(
     ops.extend([
         v2.ToDtype(torch.float32, scale=True),
         v2.Normalize(
-            mean=[0.485, 0.456, 0.406],
-            std=[0.229, 0.224, 0.225],
+            mean=[0.45, 0.45, 0.45],
+            std=[0.225, 0.225, 0.225],
         ),
     ])
 
@@ -285,16 +281,18 @@ def main():
     batch_size = 12
     num_epochs = 30
     num_frames = 16
+    image_size = (160, 160)
 
     pretrained = True
-    freeze_early = False
+    x3d_model_name = "x3d_s"
+    subclip_len = 13
+    subclip_stride = 1
 
-    freeze_all = True
-    unfreeze_layer4 = True
-    unfreeze_mode = "full_layer4"
+    freeze_backbone = True
+    unfreeze_last_n_blocks = 1
 
     learning_rate_head = 1e-4
-    learning_rate_layer4 = 3e-5
+    learning_rate_backbone = 1e-5
 
     warmup_epochs = 3
     eta_min = 1e-6
@@ -320,7 +318,7 @@ def main():
     dropout = 0.5
     bidirectional = True
 
-    use_mixup = True
+    use_mixup = False
     mixup_alpha = 0.2 #0.3 
     mixup_prob = 0.5 #0.15
 
@@ -339,9 +337,9 @@ def main():
     frames_tag = "allf" if num_frames is None else f"{num_frames}f"
 
     run_name = (
-        f"gru_v16_{timestamp}_{frames_tag}_seed{seed}"
-        f"_freezeAll{int(freeze_all)}_unfreeze{unfreeze_mode}"
-        f"_lrHead{learning_rate_head:.0e}_lrL4{learning_rate_layer4:.0e}"
+        f"x3ds_gru_v1_{timestamp}_{frames_tag}_seed{seed}"
+        f"_freezeBackbone{int(freeze_backbone)}_unfreezeLast{unfreeze_last_n_blocks}"
+        f"_lrHead{learning_rate_head:.0e}_lrBackbone{learning_rate_backbone:.0e}"
         f"_wd{weight_decay:.0e}"
         f"_aug{int(enable_augmentation)}"
         f"_dm{d_model}_gru{gru_num_layers}_bi{int(bidirectional)}"
@@ -357,20 +355,24 @@ def main():
         project="TFG",
         name=run_name,
         config={
-            "version": "v17_metrics_fix_eval_robust",
+            "version": "x3ds_gru_v1",
             "sanity_check": sanity_check,
             "seed": seed,
             "batch_size": batch_size,
             "num_epochs": num_epochs,
             "weight_decay": weight_decay,
             "num_frames": num_frames,
-            "task": "accident_clip_classification",
+            "task": "pre_toa_window_classification",
             "positive_distance": "1-30",
             "discarded_distance": "31-60",
             "negative_distance": "61-120",
             "anticipation_mode": anticipation_mode,
             "anticipation_offset": anticipation_offset,
-            "model": "ResNet18 backbone finetune + Temporal GRU",
+            "model": "X3D-S backbone + Temporal GRU",
+            "x3d_model_name": x3d_model_name,
+            "subclip_len": subclip_len,
+            "subclip_stride": subclip_stride,
+            "image_size": image_size,
             "pooling": "attention",
             "d_model": d_model,
             "gru_hidden": gru_hidden,
@@ -378,11 +380,10 @@ def main():
             "bidirectional": bidirectional,
             "dropout": dropout,
             "pretrained": pretrained,
-            "freeze_all": freeze_all,
-            "unfreeze_layer4": unfreeze_layer4,
-            "unfreeze_mode": unfreeze_mode,
+            "freeze_backbone": freeze_backbone,
+            "unfreeze_last_n_blocks": unfreeze_last_n_blocks,
             "lr_head": learning_rate_head,
-            "lr_layer4": learning_rate_layer4,
+            "lr_backbone": learning_rate_backbone,
             "label_smoothing": label_smoothing,
             "class_weights": class_weights,
             "use_weighted_sampler": use_weighted_sampler,
@@ -413,7 +414,7 @@ def main():
 
     train_transform = build_clip_transform(
         train=True,
-        image_size=(224, 224),
+        image_size=(160, 160),
         enable_augmentation=enable_augmentation,
         use_hflip=use_hflip,
         use_color_jitter=use_color_jitter,
@@ -424,7 +425,7 @@ def main():
 
     val_transform = build_clip_transform(
         train=False,
-        image_size=(224, 224),
+        image_size=(160, 160),
         enable_augmentation=False,
     )
 
@@ -571,30 +572,31 @@ def main():
         **loader_kwargs,
     )
 
-    model = BaselineResNetGRU(
+    model = X3DGRU(
         num_classes=2,
+        model_name=x3d_model_name,
+        pretrained=pretrained,
+        subclip_len=subclip_len,
+        subclip_stride=subclip_stride,
         d_model=d_model,
         gru_hidden=gru_hidden,
         gru_layers=gru_num_layers,
         dropout=dropout,
-        pretrained=pretrained,
-        freeze_early=freeze_early,
-        freeze_all=freeze_all,
-        unfreeze_layer4=unfreeze_layer4,
-        unfreeze_mode=unfreeze_mode,
         bidirectional=bidirectional,
+        freeze_backbone=freeze_backbone,
+        unfreeze_last_n_blocks=unfreeze_last_n_blocks,
     ).to(device)
 
     model.train()
-    #set_backbone_bn_eval(model)
+    set_backbone_bn_eval(model)
 
     bn_train = sum(
         1 for m in model.backbone.modules()
-        if isinstance(m, nn.BatchNorm2d) and m.training
+        if isinstance(m, (nn.BatchNorm3d, nn.BatchNorm2d, nn.BatchNorm1d)) and m.training
     )
     bn_total = sum(
         1 for m in model.backbone.modules()
-        if isinstance(m, nn.BatchNorm2d)
+        if isinstance(m, (nn.BatchNorm3d, nn.BatchNorm2d, nn.BatchNorm1d))
     )
 
     print(f"[BN check] backbone BN en train: {bn_train}/{bn_total}  (esperado 0/{bn_total})")
@@ -635,7 +637,7 @@ def main():
 
     param_groups = [{"params": head_params, "lr": learning_rate_head}]
     if backbone_params:
-        param_groups.append({"params": backbone_params, "lr": learning_rate_layer4})
+        param_groups.append({"params": backbone_params, "lr": learning_rate_backbone})
 
     optimizer = torch.optim.AdamW(param_groups, weight_decay=weight_decay)
 
@@ -672,7 +674,7 @@ def main():
 
     for epoch in range(num_epochs):
         model.train()
-        #set_backbone_bn_eval(model)
+        set_backbone_bn_eval(model)
 
         running_loss = 0.0
         num_mixup_batches = 0
@@ -780,7 +782,7 @@ def main():
 
         attn_table = wandb.Table(
             data=[[i, float(w)] for i, w in enumerate(val_metrics["mean_attn"])],
-            columns=["frame_idx", "attn_weight"],
+            columns=["subclip_idx", "attn_weight"],
         )
 
         wandb.log({
@@ -818,9 +820,9 @@ def main():
 
             "val_attn_distribution": wandb.plot.bar(
                 attn_table,
-                "frame_idx",
+                "subclip_idx",
                 "attn_weight",
-                title=f"Mean temporal attention (epoch {epoch + 1})",
+                title=f"Mean subclip attention (epoch {epoch + 1})",
             ),
         }, step=epoch + 1)
 
@@ -866,8 +868,12 @@ def main():
                 "gru_hidden": gru_hidden,
                 "gru_num_layers": gru_num_layers,
                 "bidirectional": bidirectional,
-                "freeze_all": freeze_all,
-                "unfreeze_layer4": unfreeze_layer4,
+                "x3d_model_name": x3d_model_name,
+                "subclip_len": subclip_len,
+                "subclip_stride": subclip_stride,
+                "image_size": image_size,
+                "freeze_backbone": freeze_backbone,
+                "unfreeze_last_n_blocks": unfreeze_last_n_blocks,
                 "label_smoothing": label_smoothing,
                 "use_weighted_sampler": use_weighted_sampler,
                 "use_mixup": use_mixup,
@@ -923,8 +929,12 @@ def main():
                 "gru_hidden": gru_hidden,
                 "gru_num_layers": gru_num_layers,
                 "bidirectional": bidirectional,
-                "freeze_all": freeze_all,
-                "unfreeze_layer4": unfreeze_layer4,
+                "x3d_model_name": x3d_model_name,
+                "subclip_len": subclip_len,
+                "subclip_stride": subclip_stride,
+                "image_size": image_size,
+                "freeze_backbone": freeze_backbone,
+                "unfreeze_last_n_blocks": unfreeze_last_n_blocks,
                 "label_smoothing": label_smoothing,
                 "use_weighted_sampler": use_weighted_sampler,
                 "use_mixup": use_mixup,
