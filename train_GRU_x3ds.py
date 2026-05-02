@@ -11,6 +11,8 @@ from datetime import datetime
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
+    precision_score,
+    recall_score,
     average_precision_score,
     roc_auc_score,
     confusion_matrix,
@@ -53,6 +55,57 @@ def get_samples_from_dataset(ds):
     return ds.samples
 
 
+def find_best_threshold(y_true, y_prob, metric="f1"):
+    """
+    Busca el mejor threshold usando P(label=1) en validación.
+
+    metric="f1": maximiza F1.
+    metric="precision_at_recall": maximiza precision con recall >= 0.80.
+    metric="recall_at_precision": maximiza recall con precision >= 0.60.
+    """
+    thresholds = np.linspace(0.01, 0.99, 99)
+
+    best = {
+        "threshold": 0.5,
+        "score": -1.0,
+        "acc": 0.0,
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "cm": None,
+    }
+
+    for t in thresholds:
+        y_pred = (y_prob >= t).astype(int)
+
+        acc = accuracy_score(y_true, y_pred)
+        f1 = f1_score(y_true, y_pred, zero_division=0)
+        precision = precision_score(y_true, y_pred, zero_division=0)
+        recall = recall_score(y_true, y_pred, zero_division=0)
+
+        if metric == "f1":
+            score = f1
+        elif metric == "precision_at_recall":
+            score = precision if recall >= 0.80 else -1.0
+        elif metric == "recall_at_precision":
+            score = recall if precision >= 0.60 else -1.0
+        else:
+            raise ValueError(f"metric no soportada: {metric}")
+
+        if score > best["score"]:
+            best = {
+                "threshold": float(t),
+                "score": float(score),
+                "acc": float(acc),
+                "f1": float(f1),
+                "precision": float(precision),
+                "recall": float(recall),
+                "cm": confusion_matrix(y_true, y_pred, labels=[0, 1]),
+            }
+
+    return best
+
+
 @torch.no_grad()
 def evaluate(model, dataloader, criterion, device, split_name="val"):
     model.eval()
@@ -89,6 +142,10 @@ def evaluate(model, dataloader, criterion, device, split_name="val"):
 
     eval_acc = accuracy_score(labels_arr, preds_arr)
     eval_f1 = f1_score(labels_arr, preds_arr, zero_division=0)
+    eval_precision = precision_score(labels_arr, preds_arr, zero_division=0)
+    eval_recall = recall_score(labels_arr, preds_arr, zero_division=0)
+
+    best_thr = find_best_threshold(labels_arr, scores_arr, metric="f1")
 
     unique_labels = np.unique(labels_arr)
     if len(unique_labels) > 1:
@@ -132,6 +189,20 @@ def evaluate(model, dataloader, criterion, device, split_name="val"):
         f"mean_neg={mean_score_neg:.4f} | separation={mean_score_pos - mean_score_neg:.4f}"
     )
 
+    print(
+        f"[{split_name} threshold@0.5] "
+        f"acc={eval_acc:.4f} | f1={eval_f1:.4f} | "
+        f"precision={eval_precision:.4f} | recall={eval_recall:.4f}"
+    )
+    print(
+        f"[{split_name} best_threshold_f1] "
+        f"thr={best_thr['threshold']:.3f} | "
+        f"acc={best_thr['acc']:.4f} | f1={best_thr['f1']:.4f} | "
+        f"precision={best_thr['precision']:.4f} | recall={best_thr['recall']:.4f}"
+    )
+    print(f"[{split_name} best_threshold_f1] Confusion matrix [[TN, FP], [FN, TP]]:")
+    print(best_thr["cm"])
+
     attn_entropy_pos = float("nan")
     attn_entropy_neg = float("nan")
     attn_peak_pos = -1
@@ -161,9 +232,17 @@ def evaluate(model, dataloader, criterion, device, split_name="val"):
         "loss": eval_loss,
         "acc": eval_acc,
         "f1": eval_f1,
+        "precision": eval_precision,
+        "recall": eval_recall,
         "ap": eval_ap,
         "auc": eval_auc,
         "cm": eval_cm,
+        "best_threshold": best_thr["threshold"],
+        "best_threshold_acc": best_thr["acc"],
+        "best_threshold_f1": best_thr["f1"],
+        "best_threshold_precision": best_thr["precision"],
+        "best_threshold_recall": best_thr["recall"],
+        "best_threshold_cm": best_thr["cm"],
         "mean_attn": mean_attn,
         "attn_entropy": attn_entropy,
         "attn_entropy_pos": attn_entropy_pos,
@@ -270,7 +349,7 @@ class CosineAnnealingWithWarmup(torch.optim.lr_scheduler._LRScheduler):
 
 
 def main():
-    seed = 42
+    seed = 44 #42,43,44
     set_seed(seed)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -278,21 +357,21 @@ def main():
 
     sanity_check = False
 
-    batch_size = 12
+    batch_size = 6
     num_epochs = 30
-    num_frames = 16
+    num_frames = 32
     image_size = (160, 160)
 
     pretrained = True
     x3d_model_name = "x3d_s"
     subclip_len = 13
-    subclip_stride = 1
+    subclip_stride = 3
 
     freeze_backbone = True
-    unfreeze_last_n_blocks = 1
+    unfreeze_last_n_blocks = 0
 
     learning_rate_head = 1e-4
-    learning_rate_backbone = 1e-5
+    learning_rate_backbone = 0 #1e-5
 
     warmup_epochs = 3
     eta_min = 1e-6
@@ -319,14 +398,14 @@ def main():
     bidirectional = True
 
     use_mixup = False
-    mixup_alpha = 0.2 #0.3 
-    mixup_prob = 0.5 #0.15
+    mixup_alpha = 0.2
+    mixup_prob = 0.3
 
     label_smoothing = 0.0
     use_weighted_sampler = False
     class_weights = None
 
-    weight_decay = 5e-4
+    weight_decay = 1e-4 #5e-4
     run_val_sanity_check = True
 
     patience = 5
@@ -355,7 +434,7 @@ def main():
         project="TFG",
         name=run_name,
         config={
-            "version": "x3ds_gru_v1",
+            "version": "x3ds_gru_v1_threshold",
             "sanity_check": sanity_check,
             "seed": seed,
             "batch_size": batch_size,
@@ -407,6 +486,7 @@ def main():
             "temporal_max_jitter": temporal_max_jitter,
             "use_toa_guided_sampling": use_toa_guided_sampling,
             "toa_center_strength": toa_center_strength,
+            "threshold_tuning": "best_f1_on_validation",
             "start_only_baseline_auc": 0.7136,
             "start_only_baseline_ap": 0.6527,
         },
@@ -662,7 +742,14 @@ def main():
             f"[Sanity check] loss={sc['loss']:.4f} | acc={sc['acc']:.4f} | "
             f"f1={sc['f1']:.4f} | ap={sc['ap']:.4f} | auc={sc['auc']:.4f}"
         )
-        print(f"[Sanity check] Confusion matrix:\n{sc['cm']}")
+        print(f"[Sanity check] Confusion matrix @0.5:\n{sc['cm']}")
+        print(
+            f"[Sanity check] Best F1 threshold={sc['best_threshold']:.3f} | "
+            f"f1={sc['best_threshold_f1']:.4f} | "
+            f"precision={sc['best_threshold_precision']:.4f} | "
+            f"recall={sc['best_threshold_recall']:.4f}"
+        )
+        print(f"[Sanity check] Confusion matrix best threshold:\n{sc['best_threshold_cm']}")
         if not np.isnan(sc["auc"]) and sc["auc"] > 0.60:
             print(
                 f"[Sanity check] ADVERTENCIA: val_auc={sc['auc']:.4f} > 0.60 antes de entrenar. "
@@ -766,19 +853,29 @@ def main():
 
         print(
             f"Train Loss(opt): {train_loss:.4f} | "
-            f"Train Eval Acc: {train_metrics['acc']:.4f} | "
-            f"Train Eval F1: {train_metrics['f1']:.4f} | "
+            f"Train Eval Acc@0.5: {train_metrics['acc']:.4f} | "
+            f"Train Eval F1@0.5: {train_metrics['f1']:.4f} | "
             f"Train Eval AP: {train_metrics['ap']:.4f} | "
             f"Train Eval AUC: {train_metrics['auc']:.4f} || "
             f"Val Loss: {val_metrics['loss']:.4f} | "
-            f"Val Acc: {val_metrics['acc']:.4f} | "
-            f"Val F1: {val_metrics['f1']:.4f} | "
+            f"Val Acc@0.5: {val_metrics['acc']:.4f} | "
+            f"Val F1@0.5: {val_metrics['f1']:.4f} | "
             f"Val AP: {val_metrics['ap']:.4f} | "
             f"Val AUC: {val_metrics['auc']:.4f}"
         )
 
-        print("Val confusion matrix [[TN, FP], [FN, TP]]:")
+        print(
+            f"Val BestThrF1: thr={val_metrics['best_threshold']:.3f} | "
+            f"acc={val_metrics['best_threshold_acc']:.4f} | "
+            f"f1={val_metrics['best_threshold_f1']:.4f} | "
+            f"precision={val_metrics['best_threshold_precision']:.4f} | "
+            f"recall={val_metrics['best_threshold_recall']:.4f}"
+        )
+
+        print("Val confusion matrix @0.5 [[TN, FP], [FN, TP]]:")
         print(val_metrics["cm"])
+        print("Val confusion matrix best F1 threshold [[TN, FP], [FN, TP]]:")
+        print(val_metrics["best_threshold_cm"])
 
         attn_table = wandb.Table(
             data=[[i, float(w)] for i, w in enumerate(val_metrics["mean_attn"])],
@@ -793,23 +890,42 @@ def main():
             "train_mixup_ratio": mixup_ratio,
 
             "train_eval_loss": train_metrics["loss"],
-            "train_eval_acc": train_metrics["acc"],
-            "train_eval_f1": train_metrics["f1"],
+            "train_eval_acc@0.5": train_metrics["acc"],
+            "train_eval_f1@0.5": train_metrics["f1"],
+            "train_eval_precision@0.5": train_metrics["precision"],
+            "train_eval_recall@0.5": train_metrics["recall"],
             "train_eval_ap": train_metrics["ap"],
             "train_eval_roc_auc": train_metrics["auc"],
             "train_eval_score_separation": train_metrics["score_separation"],
+            "train_eval_best_threshold": train_metrics["best_threshold"],
+            "train_eval_best_f1": train_metrics["best_threshold_f1"],
+            "train_eval_best_precision": train_metrics["best_threshold_precision"],
+            "train_eval_best_recall": train_metrics["best_threshold_recall"],
+            "train_eval_best_acc": train_metrics["best_threshold_acc"],
 
             "val_loss": val_metrics["loss"],
-            "val_acc": val_metrics["acc"],
-            "val_f1": val_metrics["f1"],
+            "val_acc@0.5": val_metrics["acc"],
+            "val_f1@0.5": val_metrics["f1"],
+            "val_precision@0.5": val_metrics["precision"],
+            "val_recall@0.5": val_metrics["recall"],
             "val_ap": val_metrics["ap"],
             "val_roc_auc": val_metrics["auc"],
             "val_score_separation": val_metrics["score_separation"],
+            "val_best_threshold": val_metrics["best_threshold"],
+            "val_best_f1": val_metrics["best_threshold_f1"],
+            "val_best_precision": val_metrics["best_threshold_precision"],
+            "val_best_recall": val_metrics["best_threshold_recall"],
+            "val_best_acc": val_metrics["best_threshold_acc"],
 
-            "val_cm_tn": int(val_metrics["cm"][0, 0]),
-            "val_cm_fp": int(val_metrics["cm"][0, 1]),
-            "val_cm_fn": int(val_metrics["cm"][1, 0]),
-            "val_cm_tp": int(val_metrics["cm"][1, 1]),
+            "val_cm@0.5_tn": int(val_metrics["cm"][0, 0]),
+            "val_cm@0.5_fp": int(val_metrics["cm"][0, 1]),
+            "val_cm@0.5_fn": int(val_metrics["cm"][1, 0]),
+            "val_cm@0.5_tp": int(val_metrics["cm"][1, 1]),
+
+            "val_best_cm_tn": int(val_metrics["best_threshold_cm"][0, 0]),
+            "val_best_cm_fp": int(val_metrics["best_threshold_cm"][0, 1]),
+            "val_best_cm_fn": int(val_metrics["best_threshold_cm"][1, 0]),
+            "val_best_cm_tp": int(val_metrics["best_threshold_cm"][1, 1]),
 
             "val_attn_entropy": val_metrics["attn_entropy"],
             "val_attn_entropy_pos": val_metrics["attn_entropy_pos"],
@@ -847,15 +963,23 @@ def main():
 
                 "val_auc": val_metrics["auc"],
                 "val_ap": val_metrics["ap"],
-                "val_acc": val_metrics["acc"],
-                "val_f1": val_metrics["f1"],
+                "val_acc@0.5": val_metrics["acc"],
+                "val_f1@0.5": val_metrics["f1"],
+                "val_precision@0.5": val_metrics["precision"],
+                "val_recall@0.5": val_metrics["recall"],
                 "val_loss": val_metrics["loss"],
-                "val_cm": val_metrics["cm"],
+                "val_cm@0.5": val_metrics["cm"],
+                "val_best_threshold": val_metrics["best_threshold"],
+                "val_best_acc": val_metrics["best_threshold_acc"],
+                "val_best_f1": val_metrics["best_threshold_f1"],
+                "val_best_precision": val_metrics["best_threshold_precision"],
+                "val_best_recall": val_metrics["best_threshold_recall"],
+                "val_best_cm": val_metrics["best_threshold_cm"],
 
                 "train_auc": train_metrics["auc"],
                 "train_ap": train_metrics["ap"],
-                "train_acc": train_metrics["acc"],
-                "train_f1": train_metrics["f1"],
+                "train_acc@0.5": train_metrics["acc"],
+                "train_f1@0.5": train_metrics["f1"],
                 "train_loss_eval": train_metrics["loss"],
                 "train_loss_optim": train_loss,
 
@@ -908,15 +1032,23 @@ def main():
 
                 "val_auc": val_metrics["auc"],
                 "val_ap": val_metrics["ap"],
-                "val_acc": val_metrics["acc"],
-                "val_f1": val_metrics["f1"],
+                "val_acc@0.5": val_metrics["acc"],
+                "val_f1@0.5": val_metrics["f1"],
+                "val_precision@0.5": val_metrics["precision"],
+                "val_recall@0.5": val_metrics["recall"],
                 "val_loss": val_metrics["loss"],
-                "val_cm": val_metrics["cm"],
+                "val_cm@0.5": val_metrics["cm"],
+                "val_best_threshold": val_metrics["best_threshold"],
+                "val_best_acc": val_metrics["best_threshold_acc"],
+                "val_best_f1": val_metrics["best_threshold_f1"],
+                "val_best_precision": val_metrics["best_threshold_precision"],
+                "val_best_recall": val_metrics["best_threshold_recall"],
+                "val_best_cm": val_metrics["best_threshold_cm"],
 
                 "train_auc": train_metrics["auc"],
                 "train_ap": train_metrics["ap"],
-                "train_acc": train_metrics["acc"],
-                "train_f1": train_metrics["f1"],
+                "train_acc@0.5": train_metrics["acc"],
+                "train_f1@0.5": train_metrics["f1"],
                 "train_loss_eval": train_metrics["loss"],
                 "train_loss_optim": train_loss,
 
@@ -956,15 +1088,20 @@ def main():
 
             "val_auc": val_metrics["auc"],
             "val_ap": val_metrics["ap"],
-            "val_acc": val_metrics["acc"],
-            "val_f1": val_metrics["f1"],
+            "val_acc@0.5": val_metrics["acc"],
+            "val_f1@0.5": val_metrics["f1"],
             "val_loss": val_metrics["loss"],
-            "val_cm": val_metrics["cm"],
+            "val_cm@0.5": val_metrics["cm"],
+            "val_best_threshold": val_metrics["best_threshold"],
+            "val_best_f1": val_metrics["best_threshold_f1"],
+            "val_best_precision": val_metrics["best_threshold_precision"],
+            "val_best_recall": val_metrics["best_threshold_recall"],
+            "val_best_cm": val_metrics["best_threshold_cm"],
 
             "train_auc": train_metrics["auc"],
             "train_ap": train_metrics["ap"],
-            "train_acc": train_metrics["acc"],
-            "train_f1": train_metrics["f1"],
+            "train_acc@0.5": train_metrics["acc"],
+            "train_f1@0.5": train_metrics["f1"],
             "train_loss_eval": train_metrics["loss"],
             "train_loss_optim": train_loss,
 

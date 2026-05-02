@@ -274,7 +274,7 @@ class CosineAnnealingWithWarmup(torch.optim.lr_scheduler._LRScheduler):
 
 
 def main():
-    seed = 42
+    seed = 44
     set_seed(seed)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -282,7 +282,7 @@ def main():
 
     sanity_check = False
 
-    batch_size = 12
+    batch_size = 6
     num_epochs = 30
     num_frames = 16
 
@@ -322,13 +322,13 @@ def main():
 
     use_mixup = True
     mixup_alpha = 0.2 #0.3 
-    mixup_prob = 0.5 #0.15
+    mixup_prob = 0.3 #0.15
 
-    label_smoothing = 0.0
+    label_smoothing = 0.05
     use_weighted_sampler = False
     class_weights = None
 
-    weight_decay = 5e-4
+    weight_decay = 1e-3
     run_val_sanity_check = True
 
     patience = 5
