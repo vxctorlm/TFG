@@ -61,6 +61,12 @@ class X3DGRU(nn.Module):
         bidirectional=True,
         freeze_backbone=True,
         unfreeze_last_n_blocks=1,
+        use_aux_heads=False,
+        num_types=61,
+        num_weather=4,
+        num_light=2,
+        num_scenes=5,
+        num_linear=5,
     ):
         super().__init__()
 
@@ -132,6 +138,39 @@ class X3DGRU(nn.Module):
             nn.Dropout(dropout),
             nn.Linear(gru_out_dim // 2, num_classes),
         )
+
+        self.use_aux_heads = use_aux_heads
+
+        if self.use_aux_heads:
+            self.type_head = nn.Sequential(
+                nn.LayerNorm(gru_out_dim),
+                nn.Dropout(dropout),
+                nn.Linear(gru_out_dim, num_types),
+            )
+
+            self.weather_head = nn.Sequential(
+                nn.LayerNorm(gru_out_dim),
+                nn.Dropout(dropout),
+                nn.Linear(gru_out_dim, num_weather),
+            )
+
+            self.light_head = nn.Sequential(
+                nn.LayerNorm(gru_out_dim),
+                nn.Dropout(dropout),
+                nn.Linear(gru_out_dim, num_light),
+            )
+
+            self.scene_head = nn.Sequential(
+                nn.LayerNorm(gru_out_dim),
+                nn.Dropout(dropout),
+                nn.Linear(gru_out_dim, num_scenes),
+            )
+
+            self.linear_head = nn.Sequential(
+                nn.LayerNorm(gru_out_dim),
+                nn.Dropout(dropout),
+                nn.Linear(gru_out_dim, num_linear),
+            )
 
     @torch.no_grad()
     def _infer_backbone_dim(self):
@@ -218,4 +257,15 @@ class X3DGRU(nn.Module):
 
         pooled, attn_weights = self.pool(temporal)
         logits = self.classifier(pooled)
+
+        if self.use_aux_heads:
+            aux_logits = {
+                "type": self.type_head(pooled),
+                "weather": self.weather_head(pooled),
+                "light": self.light_head(pooled),
+                "scene": self.scene_head(pooled),
+                "linear": self.linear_head(pooled),
+            }
+            return logits, attn_weights, aux_logits
+
         return logits, attn_weights

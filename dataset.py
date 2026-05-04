@@ -5,7 +5,12 @@ from PIL import Image
 import torch
 from torch.utils.data import Dataset
 from torchvision import tv_tensors
+import pandas as pd
 
+def safe_int_minus_one(x):
+    if pd.isna(x):
+        return -100
+    return int(x) - 1
 
 class AccidentClipDataset(Dataset):
     def __init__(
@@ -22,6 +27,8 @@ class AccidentClipDataset(Dataset):
         anticipation_mode=False,
         anticipation_offset=1,
         drop_invalid_samples=True,
+        annotations_xlsx=None,
+        use_aux_annotations=False,
     ):
         self.txt_path = Path(txt_path)
         self.rgb_root = Path(rgb_root)
@@ -37,6 +44,10 @@ class AccidentClipDataset(Dataset):
         self.anticipation_mode = anticipation_mode
         self.anticipation_offset = anticipation_offset
         self.drop_invalid_samples = drop_invalid_samples
+
+        self.annotations_xlsx = annotations_xlsx
+        self.use_aux_annotations = use_aux_annotations
+        self.aux_by_video = self._load_aux_annotations() if use_aux_annotations else {}
 
         self.samples = self._load_samples()
 
@@ -88,6 +99,51 @@ class AccidentClipDataset(Dataset):
             )
 
         return samples
+
+    def _normalize_video_id(self, video_id):
+        """
+        Convierte IDs tipo '001', '000001', '1', '1.mp4' a int cuando sea posible.
+        """
+        video_id = str(video_id)
+        video_id = Path(video_id).stem
+
+        digits = "".join(ch for ch in video_id if ch.isdigit())
+        if digits == "":
+            return video_id
+
+        return int(digits)
+
+
+    def _load_aux_annotations(self):
+        if self.annotations_xlsx is None:
+            return {}
+
+        df = pd.read_excel(self.annotations_xlsx, sheet_name="Sheet1")
+
+        col_weather = "weather(sunny,rainy,snowy,foggy)1-4"
+        col_light = "light(day,night)1-2"
+        col_scene = "scenes(highway,tunnel,mountain,urban,rural)1-5"
+        col_linear = "linear(arterials,curve,intersection,T-junction,ramp) 1-5"
+
+        aux_by_video = {}
+
+        type_values = sorted(df["type"].dropna().astype(int).unique())
+        self.type_to_idx = {v: i for i, v in enumerate(type_values)}
+        print(f"[Aux type mapping] {len(self.type_to_idx)} tipos únicos: {type_values}")
+
+        for _, row in df.iterrows():
+            video_key = self._normalize_video_id(row["video"])
+
+            aux_by_video[video_key] = {
+                "weather": safe_int_minus_one(row[col_weather]),
+                "light": safe_int_minus_one(row[col_light]),
+                "scene": safe_int_minus_one(row[col_scene]),
+                "linear": safe_int_minus_one(row[col_linear]),
+                "type": self.type_to_idx[int(row["type"])],
+            }
+
+        print(f"[Aux annotations] Cargadas {len(aux_by_video)} anotaciones desde {self.annotations_xlsx}")
+        return aux_by_video
 
     def __len__(self):
         return len(self.samples)
@@ -202,4 +258,27 @@ class AccidentClipDataset(Dataset):
         clip = torch.as_tensor(clip)
         label = torch.tensor(sample["label"], dtype=torch.long)
 
+        if self.use_aux_annotations:
+            video_key = self._normalize_video_id(sample["video_id"])
+
+            aux = self.aux_by_video.get(
+                video_key,
+                {
+                    "weather": -100,
+                    "light": -100,
+                    "scene": -100,
+                    "linear": -100,
+                    "type": -100,
+                },
+            )
+
+            aux = {
+                k: torch.tensor(v, dtype=torch.long)
+                for k, v in aux.items()
+            }
+
+            return clip, label, aux
+
         return clip, label
+
+    

@@ -116,12 +116,21 @@ def evaluate(model, dataloader, criterion, device, split_name="val"):
     all_scores = []
     all_attn = []
 
-    for clips, labels in dataloader:
+    for batch in dataloader:
+        if len(batch) == 3:
+            clips, labels, aux = batch
+        else:
+            clips, labels = batch
+            aux = None
         clips = clips.to(device)
         labels = labels.to(device)
 
         with torch.amp.autocast("cuda", enabled=(device.type == "cuda")):
-            outputs, attn_weights = model(clips)
+            model_out = model(clips)
+            if len(model_out) == 3:
+                outputs, attn_weights, _ = model_out
+            else:
+                outputs, attn_weights = model_out
             loss = criterion(outputs, labels)
 
         running_loss += loss.item()
@@ -346,7 +355,11 @@ class CosineAnnealingWithWarmup(torch.optim.lr_scheduler._LRScheduler):
             self.eta_min + (base_lr - self.eta_min) * cosine_factor
             for base_lr in self.base_lrs
         ]
-
+def safe_aux_ce(criterion, logits, target):
+    valid = target != -100
+    if valid.any():
+        return criterion(logits, target)
+    return logits.sum() * 0.0
 
 def main():
     seed = 44 #42,43,44
@@ -368,10 +381,10 @@ def main():
     subclip_stride = 3
 
     freeze_backbone = True
-    unfreeze_last_n_blocks = 0
+    unfreeze_last_n_blocks = 1
 
     learning_rate_head = 1e-4
-    learning_rate_backbone = 0 #1e-5
+    learning_rate_backbone = 1e-6 #1e-5
 
     warmup_epochs = 3
     eta_min = 1e-6
@@ -428,13 +441,22 @@ def main():
         f"_mix{int(use_mixup)}"
     )
 
+    use_aux_annotations = True
+    annotations_xlsx = "/data-fast/data-server/vlopezmo/DADA2000/dada_text_annotations.xlsx"
+
+    lambda_type = 0.03
+    lambda_weather = 0.0
+    lambda_light = 0.0
+    lambda_scene = 0.0
+    lambda_linear = 0.0
+
     print("Run name:", run_name)
 
     wandb.init(
         project="TFG",
         name=run_name,
         config={
-            "version": "x3ds_gru_v1_threshold",
+            "version": f"_aux{int(use_aux_annotations)}",
             "sanity_check": sanity_check,
             "seed": seed,
             "batch_size": batch_size,
@@ -489,6 +511,14 @@ def main():
             "threshold_tuning": "best_f1_on_validation",
             "start_only_baseline_auc": 0.7136,
             "start_only_baseline_ap": 0.6527,
+            "use_aux_annotations": use_aux_annotations,
+            "annotations_xlsx": annotations_xlsx,
+            "lambda_type": lambda_type,
+            "lambda_weather": lambda_weather,
+            "lambda_light": lambda_light,
+            "lambda_scene": lambda_scene,
+            "lambda_linear": lambda_linear,
+            "aux_strategy": "multitask_visual_heads",
         },
     )
 
@@ -522,6 +552,8 @@ def main():
         anticipation_mode=anticipation_mode,
         anticipation_offset=anticipation_offset,
         drop_invalid_samples=True,
+        annotations_xlsx=annotations_xlsx,
+        use_aux_annotations=use_aux_annotations,
     )
 
     val_dataset = AccidentClipDataset(
@@ -537,7 +569,24 @@ def main():
         anticipation_mode=anticipation_mode,
         anticipation_offset=anticipation_offset,
         drop_invalid_samples=True,
+        annotations_xlsx=annotations_xlsx,
+        use_aux_annotations=use_aux_annotations,
     )
+
+    def count_aux_coverage(ds):
+        count = 0
+        for s in ds.samples:
+            video_key = ds._normalize_video_id(s["video_id"])
+            if video_key in ds.aux_by_video:
+                count += 1
+        return count
+
+    if use_aux_annotations:
+        train_aux_count = count_aux_coverage(train_dataset)
+        val_aux_count = count_aux_coverage(val_dataset)
+
+        print(f"Train samples con aux annotations: {train_aux_count}/{len(train_dataset)}")
+        print(f"Val samples con aux annotations: {val_aux_count}/{len(val_dataset)}")
 
     print("Número de muestras de train:", len(train_dataset))
     print("Número de muestras de val:", len(val_dataset))
@@ -665,6 +714,12 @@ def main():
         bidirectional=bidirectional,
         freeze_backbone=freeze_backbone,
         unfreeze_last_n_blocks=unfreeze_last_n_blocks,
+        use_aux_heads=use_aux_annotations,
+        num_types=62,
+        num_weather=4,
+        num_light=2,
+        num_scenes=5,
+        num_linear=5,
     ).to(device)
 
     model.train()
@@ -702,6 +757,8 @@ def main():
         label_smoothing=label_smoothing,
     )
     criterion_eval = nn.CrossEntropyLoss()
+
+    criterion_aux = nn.CrossEntropyLoss(ignore_index=-100)
 
     trainable_named_params = [
         (name, param) for name, param in model.named_parameters()
@@ -767,9 +824,18 @@ def main():
         num_mixup_batches = 0
         num_total_batches = 0
 
-        for batch_idx, (clips, labels) in enumerate(train_loader):
+        for batch_idx, batch in enumerate(train_loader):
+            if len(batch) == 3:
+                clips, labels, aux = batch
+            else:
+                clips, labels = batch
+                aux = None
+            
             clips = clips.to(device, non_blocking=True)
             labels = labels.to(device, non_blocking=True)
+
+            if aux is not None:
+                aux = {k: v.to(device, non_blocking=True) for k, v in aux.items()}
 
             apply_mixup = use_mixup and np.random.random() < mixup_prob
             num_total_batches += 1
@@ -792,15 +858,46 @@ def main():
             optimizer.zero_grad(set_to_none=True)
 
             with torch.amp.autocast("cuda", enabled=(device.type == "cuda")):
-                outputs, _ = model(clips_input)
+                model_out = model(clips_input)
+
+                if len(model_out) == 3:
+                    outputs, _, aux_logits = model_out
+                else:
+                    outputs, _ = model_out
+                    aux_logits = None
 
                 if apply_mixup:
-                    loss = (
+                    loss_acc = (
                         lam * criterion_train(outputs, labels_a)
                         + (1.0 - lam) * criterion_train(outputs, labels_b)
                     )
                 else:
-                    loss = criterion_train(outputs, labels_a)
+                    loss_acc = criterion_train(outputs, labels_a)
+
+                loss = loss_acc
+
+                # Loss auxiliar: NO la uso con mixup porque las etiquetas auxiliares no se mezclan bien.
+                if (
+                    use_aux_annotations
+                    and aux is not None
+                    and aux_logits is not None
+                    and not apply_mixup
+                ):
+                    loss_aux_type = safe_aux_ce(criterion_aux, aux_logits["type"], aux["type"])
+                    loss_aux_weather = safe_aux_ce(criterion_aux, aux_logits["weather"], aux["weather"])
+                    loss_aux_light = safe_aux_ce(criterion_aux, aux_logits["light"], aux["light"])
+                    loss_aux_scene = safe_aux_ce(criterion_aux, aux_logits["scene"], aux["scene"])
+                    loss_aux_linear = safe_aux_ce(criterion_aux, aux_logits["linear"], aux["linear"])
+
+                    loss_aux = (
+                        lambda_type * loss_aux_type
+                        + lambda_weather * loss_aux_weather
+                        + lambda_light * loss_aux_light
+                        + lambda_scene * loss_aux_scene
+                        + lambda_linear * loss_aux_linear
+                    )
+
+                    loss = loss + loss_aux
 
             scaler.scale(loss).backward()
             scaler.unscale_(optimizer)
@@ -1004,6 +1101,18 @@ def main():
                 "mixup_alpha": mixup_alpha,
                 "mixup_prob": mixup_prob,
                 "seed": seed,
+                "use_aux_annotations": use_aux_annotations,
+                "use_aux_heads": use_aux_annotations,
+                "num_types": 52,
+                "num_weather": 4,
+                "num_light": 2,
+                "num_scenes": 5,
+                "num_linear": 5,
+                "lambda_type": lambda_type,
+                "lambda_weather": lambda_weather,
+                "lambda_light": lambda_light,
+                "lambda_scene": lambda_scene,
+                "lambda_linear": lambda_linear,
             }, ckpt_path)
 
             print(f"Nuevo mejor modelo guardado en: {ckpt_path}")
