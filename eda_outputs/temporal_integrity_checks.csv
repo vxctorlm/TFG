@@ -1,0 +1,8 @@
+check,bad_rows,expected,status
+end >= TOA,33,0,REVISAR
+window_len != 64,0,0,OK
+end < start,0,0,OK
+"label not in {0,1}",0,0,OK
+label 1 fuera de gap 1-30,0,0,OK
+label 0 fuera de gap 61-120,1212,0,REVISAR
+filas en zona gris 31-60,204,0,REVISAR

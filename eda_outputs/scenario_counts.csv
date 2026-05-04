@@ -1,0 +1,94 @@
+description,samples
+a motorbike crosses the road,480
+a vehicle changes lanes with the same direction to ego-car/another vehicle,336
+lead vehicle stops,257
+a vehicle crosses the road,244
+a motorbike is out of control,202
+a vehicle is out of control,201
+a pedestrian crosses the road,148
+a vehicle overtakes,125
+a vehicle changes lanes with the same direction to ego-car,125
+lead vehicle stops,99
+a vehicle turns left across path at signalized junctions,77
+a vehicle backes up into another vehicle,69
+a cyclist crosses the road,67
+ego-car turns left across path at non-signalized junctions,65
+a motorbike changes lines into motorway,62
+ego-car  turns right across path at non-signalized junctions,62
+a vehicle turns left across path at non-signalized junctions,53
+ego-car turns left across path at non-signalized junctions,50
+there is an object crash,50
+ego-car accelerately goes straight at non-signalized junctions,49
+ego-car is out of control,48
+ego-car controls loss,43
+lead vehicle decelerates,41
+a vehicle turns right across path at non-signalized junctions,37
+vehicles  meet on the road,34
+lead motorcycle stops,34
+a cyclist changes lines into motorway,31
+a cyclist is out of control,31
+a vehicle turns right across path at signalized junctions,30
+a motorbike runs red light,29
+vehicles meet on the road,29
+ego-car changes lanes,28
+ego-car goes straight crossing paths at non-signalized junctions,27
+there is an object crash,26
+ego-car goes straight in the blind spot area,23
+a motorbike turns left across path at non-signalized junctions,23
+a motorbike turns left across path at signalized junctions,22
+ego-car goes straight crossing paths at non-signalized junctions,22
+ego-car turns left across path at signalized junctions,19
+a vehicle turns on a road with the opposite direction to ego-car/another vehicle,19
+ego-car drives away from the road edge,18
+a vehicle goes straight crossing paths at non-signalized junctions,17
+ego-car turns right across path at signalized junctions,15
+a vehicle turns on a road with the same direction to ego-car/another vehicle,14
+a cyclist runs red light,13
+ego-car turns on a road,13
+ego-car overtakes,12
+ego-car dodges the motorbike,12
+ego-car goes straight at signalized junctions,12
+a motorbike retrogrades,12
+a following vehicle makes a maneuver,12
+a vehicle runs red light,12
+a vehicle accelerately goes straight at non-signalized junctions,11
+ego-car accelerates to turn on a road,11
+a vehicle turns on a road with the same direction to ego-car,10
+ego-car changes lanes,10
+a vehicle goes straight crossing paths at non-signalized junctions,9
+a motorbike dodges the vehicle,9
+ego-car turns right across path at non-signalized junctions,8
+lead vehicle decelerates,8
+a following vehicle makes a maneuver,7
+a motorbike turns right across path at non-signalized junctions,7
+ego-car drives slowly on congested road,7
+a motorbike turns right across path at signalized junctions,6
+ego-car passes through the blind corner of the underground park lot,6
+a vehicle goes straight at signalized junctions,6
+a vehicle backes up into ego-car,6
+ego-car accelerating to turn on a road,6
+a vehicle runs red light,6
+ego-car makes a dodge action,5
+a vehicle changes lanes - same direction,4
+a vehicle goes straight near the center line of the road,4
+ego-car goes straight at signalized junctions,4
+a vehicle  goes straight at signalized junctions,4
+ego-car turns left across path at signalized junctions,4
+a vehicle turns on a road with the same direction to,4
+a vehicle changes lanes with same direction to ego-car,4
+ego-car turns right across path at signalized junctions,3
+a vehicle accelerates out of the underground park lot,3
+a vehicle makes a dodge action,3
+ego-car goes straight at non-signalized junctions,3
+a vehicle turns on a road with the opposite direction to,3
+lead cyclist stops,3
+ego-car turns at non-signalized junctions,3
+a vehicle accelerates to turn on a road,3
+a vehicle drives away from the road edge,3
+a vehicle turns on a road with the same direction to vehicle,3
+a vehicle turns on a road with the opposite direction to ego-car,3
+ego-car changes lines,3
+no accident,2
+a vehicle turns around at non-signalized junctions,2
+a cyclist turns right across path at signalized junctions,2
+ego-car runs red light,2

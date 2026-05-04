@@ -373,18 +373,18 @@ def main():
     batch_size = 6
     num_epochs = 30
     num_frames = 32
-    image_size = (160, 160)
+    image_size = (224, 224)
 
     pretrained = True
     x3d_model_name = "x3d_s"
     subclip_len = 13
-    subclip_stride = 3
+    subclip_stride = 2
 
     freeze_backbone = True
-    unfreeze_last_n_blocks = 1
+    unfreeze_last_n_blocks = 3
 
     learning_rate_head = 1e-4
-    learning_rate_backbone = 1e-6 #1e-5
+    learning_rate_backbone = 1e-5 #1e-6
 
     warmup_epochs = 3
     eta_min = 1e-6
@@ -407,18 +407,18 @@ def main():
     d_model = 128
     gru_hidden = 128
     gru_num_layers = 1
-    dropout = 0.5
+    dropout = 0.4
     bidirectional = True
 
-    use_mixup = False
+    use_mixup = True
     mixup_alpha = 0.2
-    mixup_prob = 0.3
+    mixup_prob = 0.15
 
-    label_smoothing = 0.0
+    label_smoothing = 0.05
     use_weighted_sampler = False
     class_weights = None
 
-    weight_decay = 1e-4 #5e-4
+    weight_decay = 5e-4
     run_val_sanity_check = True
 
     patience = 5
@@ -441,10 +441,10 @@ def main():
         f"_mix{int(use_mixup)}"
     )
 
-    use_aux_annotations = True
+    use_aux_annotations = False
     annotations_xlsx = "/data-fast/data-server/vlopezmo/DADA2000/dada_text_annotations.xlsx"
 
-    lambda_type = 0.03
+    lambda_type = 0.0
     lambda_weather = 0.0
     lambda_light = 0.0
     lambda_scene = 0.0
@@ -520,11 +520,15 @@ def main():
             "lambda_linear": lambda_linear,
             "aux_strategy": "multitask_visual_heads",
         },
+        settings=wandb.Settings( 
+            init_timeout=300,
+            start_method="thread",
+        ),
     )
 
     train_transform = build_clip_transform(
         train=True,
-        image_size=(160, 160),
+        image_size=image_size,
         enable_augmentation=enable_augmentation,
         use_hflip=use_hflip,
         use_color_jitter=use_color_jitter,
@@ -535,7 +539,7 @@ def main():
 
     val_transform = build_clip_transform(
         train=False,
-        image_size=(160, 160),
+        image_size=image_size,
         enable_augmentation=False,
     )
 
@@ -1103,7 +1107,7 @@ def main():
                 "seed": seed,
                 "use_aux_annotations": use_aux_annotations,
                 "use_aux_heads": use_aux_annotations,
-                "num_types": 52,
+                "num_types": 62,
                 "num_weather": 4,
                 "num_light": 2,
                 "num_scenes": 5,
