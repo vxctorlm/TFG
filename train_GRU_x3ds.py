@@ -381,10 +381,10 @@ def main():
     subclip_stride = 2
 
     freeze_backbone = True
-    unfreeze_last_n_blocks = 3
+    unfreeze_last_n_blocks = 2
 
     learning_rate_head = 1e-4
-    learning_rate_backbone = 1e-5 #1e-6
+    learning_rate_backbone = 3e-6 #1e-6
 
     warmup_epochs = 3
     eta_min = 1e-6
@@ -407,7 +407,7 @@ def main():
     d_model = 128
     gru_hidden = 128
     gru_num_layers = 1
-    dropout = 0.4
+    dropout = 0.5
     bidirectional = True
 
     use_mixup = True
