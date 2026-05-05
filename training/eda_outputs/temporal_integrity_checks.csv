@@ -1,0 +1,9 @@
+check,bad_rows,expected,status
+end >= TOA (en muestras pre-TOA),0,0,OK
+window_len != 64,0,0,OK
+end < start,0,0,OK
+"label not in {0,1}",0,0,OK
+"label 1 fuera de gap [1, 20]",0,0,OK
+"label 0 fuera de gap [101, 180] (estricto)",495,rescate o fallback,INFO
+"  └── de los cuales son rescate (gap [21, 100])",495,permitido por diseño,INFO
+filas en zona gris para POSITIVOS (no debe haber),0,0,OK

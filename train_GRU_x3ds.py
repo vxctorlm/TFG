@@ -284,8 +284,8 @@ def build_clip_transform(
         ops.append(
             v2.RandomResizedCrop(
                 size=image_size,
-                scale=(0.90, 1.0),
-                ratio=(0.95, 1.05),
+                scale=(0.75, 1.0),
+                ratio=(0.85, 1.15),
                 antialias=True,
             )
         )
@@ -299,10 +299,10 @@ def build_clip_transform(
         if use_color_jitter:
             ops.append(
                 v2.ColorJitter(
-                    brightness=0.10,
-                    contrast=0.10,
-                    saturation=0.10,
-                    hue=0.02,
+                    brightness=0.2,
+                    contrast=0.2,
+                    saturation=0.2,
+                    hue=0.04,
                 )
             )
 
@@ -370,10 +370,10 @@ def main():
 
     sanity_check = False
 
-    batch_size = 6
-    num_epochs = 30
-    num_frames = 32
-    image_size = (224, 224)
+    batch_size = 16
+    num_epochs = 100
+    num_frames = 16
+    image_size = (160, 160)
 
     pretrained = True
     x3d_model_name = "x3d_s"
@@ -395,12 +395,12 @@ def main():
     enable_augmentation = True
     use_hflip = True
     use_color_jitter = True
-    use_random_resized_crop = False
+    use_random_resized_crop = True
     use_gaussian_blur = True
-    use_random_erasing = False
+    use_random_erasing = True
 
-    use_temporal_augmentation = False
-    temporal_max_jitter = 0
+    use_temporal_augmentation = True
+    temporal_max_jitter = 3
     use_toa_guided_sampling = False
     toa_center_strength = 0.0
 
@@ -412,7 +412,7 @@ def main():
 
     use_mixup = True
     mixup_alpha = 0.2
-    mixup_prob = 0.15
+    mixup_prob = 0.5
 
     label_smoothing = 0.05
     use_weighted_sampler = False
@@ -421,7 +421,7 @@ def main():
     weight_decay = 5e-4
     run_val_sanity_check = True
 
-    patience = 5
+    patience = 8
     min_delta = 0.001
     early_stop_counter = 0
 
@@ -464,9 +464,9 @@ def main():
             "weight_decay": weight_decay,
             "num_frames": num_frames,
             "task": "pre_toa_window_classification",
-            "positive_distance": "1-30",
-            "discarded_distance": "31-60",
-            "negative_distance": "61-120",
+            "positive_distance": "1-20",
+            "discarded_distance": "21-100",
+            "negative_distance": "101-180",
             "anticipation_mode": anticipation_mode,
             "anticipation_offset": anticipation_offset,
             "model": "X3D-S backbone + Temporal GRU",
@@ -509,8 +509,6 @@ def main():
             "use_toa_guided_sampling": use_toa_guided_sampling,
             "toa_center_strength": toa_center_strength,
             "threshold_tuning": "best_f1_on_validation",
-            "start_only_baseline_auc": 0.7136,
-            "start_only_baseline_ap": 0.6527,
             "use_aux_annotations": use_aux_annotations,
             "annotations_xlsx": annotations_xlsx,
             "lambda_type": lambda_type,
@@ -661,7 +659,7 @@ def main():
     else:
         print("WeightedRandomSampler desactivado. Se usa shuffle=True.")
 
-    num_workers = 8
+    num_workers = 24
     use_pin_memory = True
     use_persistent_workers = num_workers > 0
 
@@ -671,7 +669,7 @@ def main():
         persistent_workers=use_persistent_workers,
     )
     if num_workers > 0:
-        loader_kwargs["prefetch_factor"] = 2
+        loader_kwargs["prefetch_factor"] = 4
         loader_kwargs["worker_init_fn"] = seed_worker
 
     g = torch.Generator()

@@ -1,0 +1,5 @@
+tipo de negativo,n,%
+"negativos absolutos (vídeos sin accidente, toa=0)",33,1.6%
+"negativos sliding (toa>0, generados por sliding window)",1189,57.1%
+"negativos FALLBACK (start=1, end=64)",860,41.3%
+TOTAL negativos,2082,100.0%

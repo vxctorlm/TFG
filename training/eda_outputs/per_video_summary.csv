@@ -1,0 +1,1388 @@
+split,video_id,n_windows,n_pos,n_neg,toa,description,min_gap,max_gap,is_abs_neg,class_pattern
+train,1/002,2,1,1,168,a pedestrian crosses the road,8,104,False,ambas clases
+train,1/004,3,1,2,360,a pedestrian crosses the road,8,152,False,ambas clases
+train,1/006,3,1,2,280,a pedestrian crosses the road,8,168,False,ambas clases
+train,1/008,1,1,0,90,a pedestrian crosses the road,10,10,False,solo positivos
+train,1/009,1,1,0,93,a pedestrian crosses the road,13,13,False,solo positivos
+train,1/012,3,1,2,350,ego-car goes straight in the blind spot area,14,158,False,ambas clases
+train,1/015,3,1,2,182,ego-car goes straight in the blind spot area,6,118,False,ambas clases
+train,1/016,2,0,2,0,a pedestrian crosses the road,-192,-64,True,solo negativos
+train,1/017,3,1,2,597,ego-car goes straight in the blind spot area,5,117,False,ambas clases
+train,1/018,2,1,1,165,a pedestrian crosses the road,5,101,False,ambas clases
+train,1/019,2,1,1,96,a pedestrian crosses the road,16,32,False,ambas clases
+train,1/020,3,1,2,384,a pedestrian crosses the road,16,176,False,ambas clases
+train,1/021,2,0,2,0,a pedestrian crosses the road,-128,-64,True,solo negativos
+train,1/022,3,2,1,177,ego-car goes straight in the blind spot area,1,113,False,ambas clases
+train,1/026,2,1,1,105,a pedestrian crosses the road,9,41,False,ambas clases
+train,1/028,3,2,1,145,a pedestrian crosses the road,1,81,False,ambas clases
+train,1/031,2,1,1,171,a pedestrian crosses the road,11,107,False,ambas clases
+train,1/032,4,2,2,194,a pedestrian crosses the road,2,130,False,ambas clases
+train,1/033,4,2,2,244,a pedestrian crosses the road,4,180,False,ambas clases
+train,1/034,2,1,1,110,a pedestrian crosses the road,14,46,False,ambas clases
+train,1/035,2,1,1,138,a pedestrian crosses the road,10,74,False,ambas clases
+train,1/036,3,1,2,320,a pedestrian crosses the road,16,160,False,ambas clases
+train,1/037,2,1,1,158,a pedestrian crosses the road,14,94,False,ambas clases
+train,1/038,2,1,1,133,a pedestrian crosses the road,5,69,False,ambas clases
+train,1/039,2,1,1,108,a pedestrian crosses the road,12,44,False,ambas clases
+train,1/042,2,1,1,155,a pedestrian crosses the road,11,91,False,ambas clases
+train,1/043,2,0,2,0,a pedestrian crosses the road,-320,-128,True,solo negativos
+train,1/044,2,1,1,105,a pedestrian crosses the road,9,41,False,ambas clases
+train,1/045,2,0,2,0,a pedestrian crosses the road,-192,-64,True,solo negativos
+train,1/046,2,1,1,117,a pedestrian crosses the road,5,53,False,ambas clases
+train,1/047,4,2,2,465,a pedestrian crosses the road,1,177,False,ambas clases
+train,1/051,3,2,1,114,a pedestrian crosses the road,2,50,False,ambas clases
+train,1/053,2,1,1,140,a pedestrian crosses the road,12,76,False,ambas clases
+train,10/001,3,1,2,325,a vehicle crosses the road,5,165,False,ambas clases
+train,10/002,4,2,2,244,a vehicle runs red light,4,180,False,ambas clases
+train,10/003,2,1,1,125,ego-car passes through the blind corner of the underground park lot,13,61,False,ambas clases
+train,10/004,2,1,1,170,ego-car turns left across path at non-signalized junctions,10,106,False,ambas clases
+train,10/005,4,2,2,356,ego-car goes straight crossing paths at non-signalized junctions,4,164,False,ambas clases
+train,10/006,3,1,2,268,ego-car turns right across path at non-signalized junctions,12,156,False,ambas clases
+train,10/007,3,1,2,270,ego-car accelerately goes straight at non-signalized junctions,14,174,False,ambas clases
+train,10/009,2,1,1,168,ego-car accelerately goes straight at non-signalized junctions,8,104,False,ambas clases
+train,10/010,3,1,2,393,ego-car accelerately goes straight at non-signalized junctions,9,137,False,ambas clases
+train,10/012,2,1,1,170,ego-car accelerately goes straight at non-signalized junctions,10,106,False,ambas clases
+train,10/013,3,1,2,320,ego-car accelerately goes straight at non-signalized junctions,16,128,False,ambas clases
+train,10/014,3,1,2,389,ego-car turns left across path at non-signalized junctions,5,165,False,ambas clases
+train,10/018,3,1,2,310,a vehicle turns on a road with the opposite direction to ego-car,6,166,False,ambas clases
+train,10/019,3,1,2,478,ego-car turns on a road,14,126,False,ambas clases
+train,10/022,3,1,2,232,a vehicle accelerates out of the underground park lot,8,168,False,ambas clases
+train,10/023,4,2,2,321,ego-car changes lanes,1,145,False,ambas clases
+train,10/025,3,1,2,426,ego-car turns left across path at non-signalized junctions,10,154,False,ambas clases
+train,10/028,3,1,2,249,ego-car goes straight at signalized junctions,9,169,False,ambas clases
+train,10/029,3,1,2,300,a vehicle accelerately goes straight at non-signalized junctions,12,156,False,ambas clases
+train,10/030,4,2,2,450,a vehicle accelerately goes straight at non-signalized junctions,2,130,False,ambas clases
+train,10/031,3,1,2,296,a vehicle goes straight crossing paths at non-signalized junctions,8,168,False,ambas clases
+train,10/032,4,2,2,196,ego-car turns on a road,4,132,False,ambas clases
+train,10/033,4,2,2,274,ego-car goes straight in the blind spot area,2,130,False,ambas clases
+train,10/034,3,1,2,412,ego-car accelerately goes straight at non-signalized junctions,12,172,False,ambas clases
+train,10/035,3,1,2,186,ego-car accelerately goes straight at non-signalized junctions,10,122,False,ambas clases
+train,10/036,4,2,2,306,ego-car passes through the blind corner of the underground park lot,2,146,False,ambas clases
+train,10/037,3,1,2,285,a vehicle changes lanes with the same direction to ego-car,13,141,False,ambas clases
+train,10/038,2,0,2,0,a vehicle is out of control,-320,-128,True,solo negativos
+train,10/039,2,1,1,150,a vehicle runs red light,6,86,False,ambas clases
+train,10/041,3,1,2,363,ego-car turns left across path at non-signalized junctions,11,155,False,ambas clases
+train,10/042,3,1,2,254,ego-car goes straight crossing paths at non-signalized junctions,14,158,False,ambas clases
+train,10/044,3,1,2,374,ego-car turns left across path at non-signalized junctions,6,134,False,ambas clases
+train,10/045,3,1,2,237,a vehicle crosses the road,13,125,False,ambas clases
+train,10/047,4,2,2,260,ego-car accelerately goes straight at non-signalized junctions,4,180,False,ambas clases
+train,10/048,3,1,2,220,ego-car turns left across path at non-signalized junctions,12,156,False,ambas clases
+train,10/050,4,2,2,242,ego-car turns left across path at non-signalized junctions,2,178,False,ambas clases
+train,10/052,3,1,2,190,ego-car turns left across path at non-signalized junctions,14,126,False,ambas clases
+train,10/054,3,1,2,360,a vehicle goes straight at signalized junctions,8,136,False,ambas clases
+train,10/057,2,1,1,172,ego-car turns right across path at non-signalized junctions,12,108,False,ambas clases
+train,10/059,4,2,2,259,a vehicle accelerately goes straight at non-signalized junctions,3,179,False,ambas clases
+train,10/060,4,2,2,403,ego-car turns left across path at non-signalized junctions,3,179,False,ambas clases
+train,10/062,4,2,2,275,a vehicle turns on a road with the same direction to ego-car,3,131,False,ambas clases
+train,10/064,3,1,2,410,a vehicle changes lanes with the same direction to ego-car,10,154,False,ambas clases
+train,10/066,3,1,2,246,a vehicle turns on a road with the same direction to ego-car,6,150,False,ambas clases
+train,10/068,4,2,2,244,ego-car accelerately goes straight at non-signalized junctions,4,180,False,ambas clases
+train,10/069,4,2,2,289,a vehicle changes lanes with same direction to ego-car,1,177,False,ambas clases
+train,10/071,2,1,1,105,a vehicle crosses the road,9,41,False,ambas clases
+train,10/074,4,2,2,211,ego-car accelerately goes straight at non-signalized junctions,3,147,False,ambas clases
+train,10/075,2,1,1,112,ego-car turns left across path at signalized junctions,16,48,False,ambas clases
+train,10/076,3,1,2,182,ego-car goes straight at signalized junctions,6,118,False,ambas clases
+train,10/077,2,1,1,118,a vehicle crosses the road,6,54,False,ambas clases
+train,10/079,2,1,1,170,ego-car accelerately goes straight at non-signalized junctions,10,106,False,ambas clases
+train,10/080,3,2,1,130,ego-car goes straight crossing paths at non-signalized junctions,2,66,False,ambas clases
+train,10/084,2,1,1,170,a vehicle crosses the road,10,106,False,ambas clases
+train,10/085,2,1,1,102,a vehicle crosses the road,6,38,False,ambas clases
+train,10/086,3,1,2,201,a vehicle crosses the road,9,121,False,ambas clases
+train,10/087,3,1,2,220,a vehicle crosses the road,12,156,False,ambas clases
+train,10/088,2,1,1,166,a vehicle crosses the road,6,102,False,ambas clases
+train,10/089,2,1,1,117,a vehicle crosses the road,5,53,False,ambas clases
+train,10/090,2,1,1,137,a vehicle crosses the road,9,73,False,ambas clases
+train,10/093,2,1,1,119,a vehicle crosses the road,7,55,False,ambas clases
+train,10/099,3,1,2,220,a vehicle crosses the road,12,124,False,ambas clases
+train,10/101,2,1,1,159,a vehicle crosses the road,15,95,False,ambas clases
+train,10/102,3,2,1,115,a vehicle crosses the road,3,51,False,ambas clases
+train,10/103,3,1,2,203,a vehicle crosses the road,11,123,False,ambas clases
+train,10/104,2,1,1,152,a vehicle crosses the road,8,88,False,ambas clases
+train,10/108,2,1,1,165,a vehicle crosses the road,5,101,False,ambas clases
+train,10/110,3,1,2,238,a vehicle crosses the road,14,174,False,ambas clases
+train,10/112,4,2,2,212,a vehicle crosses the road,4,148,False,ambas clases
+train,10/117,2,1,1,105,a vehicle crosses the road,9,41,False,ambas clases
+train,10/120,3,1,2,191,a vehicle crosses the road,15,127,False,ambas clases
+train,10/124,2,1,1,166,a vehicle crosses the road,6,102,False,ambas clases
+train,10/125,3,2,1,132,a vehicle crosses the road,4,68,False,ambas clases
+train,10/127,3,2,1,99,a vehicle crosses the road,3,35,False,ambas clases
+train,10/130,3,1,2,207,a vehicle crosses the road,15,143,False,ambas clases
+train,10/132,4,2,2,244,a vehicle crosses the road,4,164,False,ambas clases
+train,10/133,2,1,1,156,a vehicle crosses the road,12,92,False,ambas clases
+train,10/134,1,1,0,93,a vehicle crosses the road,13,13,False,solo positivos
+train,10/135,3,2,1,162,a vehicle crosses the road,2,98,False,ambas clases
+train,10/138,2,1,1,134,a vehicle crosses the road,6,70,False,ambas clases
+train,10/140,2,1,1,175,a vehicle crosses the road,15,111,False,ambas clases
+train,10/145,2,1,1,120,a vehicle crosses the road,8,56,False,ambas clases
+train,10/147,3,1,2,203,a vehicle crosses the road,11,139,False,ambas clases
+train,10/148,3,1,2,220,a vehicle crosses the road,12,156,False,ambas clases
+train,10/149,2,1,1,156,a vehicle crosses the road,12,92,False,ambas clases
+train,10/151,2,1,1,111,a vehicle crosses the road,15,47,False,ambas clases
+train,10/152,4,2,2,305,a vehicle crosses the road,1,145,False,ambas clases
+train,10/153,3,1,2,182,a vehicle backes up into another vehicle,6,118,False,ambas clases
+train,10/154,3,1,2,213,a vehicle crosses the road,5,149,False,ambas clases
+train,10/157,2,1,1,139,a vehicle crosses the road,11,75,False,ambas clases
+train,10/158,2,1,1,135,a vehicle crosses the road,7,71,False,ambas clases
+train,10/160,2,1,1,106,a vehicle crosses the road,10,42,False,ambas clases
+train,10/164,3,1,2,216,a vehicle crosses the road,8,120,False,ambas clases
+train,10/165,3,1,2,185,a vehicle crosses the road,9,121,False,ambas clases
+train,10/166,3,1,2,236,a vehicle crosses the road,12,140,False,ambas clases
+train,10/167,2,1,1,138,a vehicle crosses the road,10,74,False,ambas clases
+train,11/001,2,1,1,123,lead vehicle stops,11,59,False,ambas clases
+train,11/002,3,1,2,246,vehicles meet on the road,6,134,False,ambas clases
+train,11/003,3,1,2,405,a vehicle backes up into ego-car,5,165,False,ambas clases
+train,11/004,2,1,1,120,a vehicle changes lanes with the same direction to ego-car,8,56,False,ambas clases
+train,11/005,2,1,1,143,ego-car makes a dodge action,15,79,False,ambas clases
+train,11/006,3,1,2,326,lead vehicle stops,6,150,False,ambas clases
+train,11/007,3,1,2,277,a following vehicle makes a maneuver,5,133,False,ambas clases
+train,11/008,4,2,2,338,lead vehicle stops,2,178,False,ambas clases
+train,11/011,3,1,2,185,a vehicle changes lanes with the same direction to ego-car,9,121,False,ambas clases
+train,11/012,3,1,2,432,a vehicle changes lanes with the same direction to ego-car,16,176,False,ambas clases
+train,11/015,3,1,2,361,lead vehicle stops,9,137,False,ambas clases
+train,11/016,3,1,2,318,lead vehicle stops,14,158,False,ambas clases
+train,11/017,2,1,1,170,lead vehicle decelerates,10,106,False,ambas clases
+train,11/018,3,1,2,203,lead vehicle stops,11,123,False,ambas clases
+train,11/019,3,1,2,377,ego-car overtakes,9,169,False,ambas clases
+train,11/021,3,1,2,198,a vehicle changes lanes with the same direction to ego-car,6,134,False,ambas clases
+train,11/022,3,1,2,406,lead vehicle decelerates,6,150,False,ambas clases
+train,11/023,3,1,2,336,lead vehicle stops,16,176,False,ambas clases
+train,11/024,4,2,2,225,a vehicle changes lanes with the same direction to ego-car,1,129,False,ambas clases
+train,11/025,3,1,2,294,ego-car makes a dodge action,6,166,False,ambas clases
+train,11/026,3,1,2,377,lead vehicle stops,9,169,False,ambas clases
+train,11/027,3,1,2,185,a vehicle changes lanes with the same direction to ego-car,9,121,False,ambas clases
+train,11/028,3,1,2,280,lead vehicle stops,8,152,False,ambas clases
+train,11/029,2,1,1,119,lead vehicle stops,7,55,False,ambas clases
+train,11/030,2,1,1,134,lead vehicle stops,6,70,False,ambas clases
+train,11/031,3,1,2,325,lead vehicle stops,5,133,False,ambas clases
+train,11/033,3,1,2,313,a vehicle changes lanes with the same direction to ego-car,9,153,False,ambas clases
+train,11/034,3,1,2,299,a vehicle changes lanes with the same direction to ego-car,11,155,False,ambas clases
+train,11/035,3,1,2,238,a vehicle changes lanes with the same direction to ego-car,14,174,False,ambas clases
+train,11/036,3,2,1,164,lead vehicle stops,4,100,False,ambas clases
+train,11/037,4,2,2,209,lead vehicle stops,1,145,False,ambas clases
+train,11/038,4,2,2,356,vehicles meet on the road,4,180,False,ambas clases
+train,11/039,3,1,2,493,vehicles meet on the road,13,157,False,ambas clases
+train,11/041,3,1,2,205,lead vehicle stops,13,141,False,ambas clases
+train,11/046,3,2,1,98,lead vehicle stops,2,34,False,ambas clases
+train,11/047,3,1,2,285,a vehicle changes lanes with the same direction to ego-car,13,173,False,ambas clases
+train,11/048,4,2,2,290,lead vehicle stops,2,162,False,ambas clases
+train,11/049,3,1,2,235,lead vehicle stops,11,139,False,ambas clases
+train,11/050,4,2,2,308,a vehicle changes lanes with the same direction to ego-car,4,164,False,ambas clases
+train,11/051,2,1,1,120,lead vehicle stops,8,56,False,ambas clases
+train,11/054,3,1,2,397,lead vehicle stops,13,157,False,ambas clases
+train,11/055,3,1,2,262,a vehicle changes lanes with the same direction to ego-car,6,166,False,ambas clases
+train,11/056,3,2,1,177,lead vehicle decelerates,1,113,False,ambas clases
+train,11/057,3,1,2,203,ego-car turns left across path at non-signalized junctions,11,139,False,ambas clases
+train,11/059,3,1,2,191,a vehicle changes lanes with the same direction to ego-car,15,127,False,ambas clases
+train,11/060,3,2,1,129,lead vehicle stops,1,65,False,ambas clases
+train,11/062,3,2,1,132,lead vehicle stops,4,68,False,ambas clases
+train,11/063,3,1,2,381,a vehicle changes lanes with the same direction to ego-car,13,157,False,ambas clases
+train,11/064,2,0,2,0,lead vehicle stops,-320,-128,True,solo negativos
+train,11/065,4,2,2,275,a vehicle goes straight near the center line of the road,3,179,False,ambas clases
+train,11/066,3,1,2,346,lead vehicle stops,10,170,False,ambas clases
+train,11/067,3,1,2,517,a vehicle backes up into ego-car,5,133,False,ambas clases
+train,11/068,3,1,2,200,ego-car turns left across path at non-signalized junctions,8,136,False,ambas clases
+train,11/069,3,1,2,202,lead vehicle stops,10,138,False,ambas clases
+train,11/070,3,1,2,470,ego-car accelerately goes straight at non-signalized junctions,6,166,False,ambas clases
+train,11/071,3,1,2,248,lead vehicle stops,8,120,False,ambas clases
+train,11/072,3,1,2,250,a vehicle changes lanes with the same direction to ego-car,10,170,False,ambas clases
+train,11/073,2,1,1,112,a vehicle turns around at non-signalized junctions,16,48,False,ambas clases
+train,11/074,3,1,2,264,ego-car turns on a road,8,152,False,ambas clases
+train,11/075,3,1,2,197,vehicles meet on the road,5,133,False,ambas clases
+train,11/076,3,1,2,457,ego-car turns left across path at non-signalized junctions,9,153,False,ambas clases
+train,11/078,2,1,1,96,a vehicle turns on a road with the same direction to ego-car/another vehicle,16,32,False,ambas clases
+train,11/080,4,2,2,193,a vehicle changes lanes with the same direction to ego-car,1,129,False,ambas clases
+train,11/081,2,1,1,120,lead vehicle stops,8,56,False,ambas clases
+train,11/083,2,1,1,154,a vehicle changes lanes with the same direction to ego-car,10,90,False,ambas clases
+train,11/084,4,2,2,228,vehicles meet on the road,4,132,False,ambas clases
+train,11/085,3,1,2,236,lead vehicle stops,12,172,False,ambas clases
+train,11/086,3,1,2,208,vehicles meet on the road,16,144,False,ambas clases
+train,11/088,2,1,1,125,ego-car runs red light,13,61,False,ambas clases
+train,11/089,3,2,1,147,lead vehicle stops,3,83,False,ambas clases
+train,11/090,3,1,2,267,ego-car changes lines,11,171,False,ambas clases
+train,11/092,3,1,2,250,lead vehicle stops,10,154,False,ambas clases
+train,11/093,3,1,2,204,lead vehicle stops,12,140,False,ambas clases
+train,11/094,3,1,2,205,lead vehicle stops,13,125,False,ambas clases
+train,11/096,2,1,1,121,a vehicle turns left across path at signalized junctions,9,57,False,ambas clases
+train,11/099,3,1,2,232,a vehicle changes lanes with the same direction to ego-car,8,152,False,ambas clases
+train,11/101,3,2,1,145,ego-car goes straight crossing paths at non-signalized junctions,1,81,False,ambas clases
+train,11/104,2,1,1,135,lead vehicle stops,7,71,False,ambas clases
+train,11/106,2,1,1,126,lead vehicle stops,14,62,False,ambas clases
+train,11/108,3,2,1,116,vehicles meet on the road,4,52,False,ambas clases
+train,11/110,4,2,2,371,lead vehicle stops,3,147,False,ambas clases
+train,11/111,3,1,2,222,lead vehicle stops,14,158,False,ambas clases
+train,11/112,1,1,0,90,lead vehicle stops,10,10,False,solo positivos
+train,11/113,2,1,1,125,a vehicle changes lanes with the same direction to ego-car,13,61,False,ambas clases
+train,11/114,3,1,2,222,lead vehicle stops,14,126,False,ambas clases
+train,11/116,3,1,2,192,ego-car accelerating to turn on a road,16,128,False,ambas clases
+train,11/118,4,2,2,194,a vehicle turns on a road with the same direction to,2,130,False,ambas clases
+train,11/119,2,1,1,167,ego-car goes straight at signalized junctions,7,103,False,ambas clases
+train,11/120,3,1,2,207,lead vehicle stops,15,127,False,ambas clases
+train,11/121,3,1,2,208,a vehicle turns right across path at non-signalized junctions,16,144,False,ambas clases
+train,11/133,3,2,1,114,lead vehicle stops,2,50,False,ambas clases
+train,11/136,3,1,2,198,a vehicle changes lanes with the same direction to ego-car/another vehicle,6,134,False,ambas clases
+train,11/137,2,1,1,166,ego-car goes straight crossing paths at non-signalized junctions,6,102,False,ambas clases
+train,11/139,3,2,1,178,vehicles  meet on the road,2,114,False,ambas clases
+train,11/142,2,1,1,135,a vehicle changes lanes with the same direction to ego-car/another vehicle,7,71,False,ambas clases
+train,11/144,2,1,1,153,a vehicle goes straight crossing paths at non-signalized junctions,9,89,False,ambas clases
+train,11/145,3,1,2,188,ego-car goes straight crossing paths at non-signalized junctions,12,124,False,ambas clases
+train,11/146,3,1,2,186,a vehicle changes lanes with the same direction to ego-car/another vehicle,10,122,False,ambas clases
+train,11/149,2,1,1,134,lead vehicle stops,6,70,False,ambas clases
+train,11/150,2,1,1,136,a vehicle turns on a road with the opposite direction to ego-car/another vehicle,8,72,False,ambas clases
+train,11/152,2,1,1,103,lead vehicle decelerates,7,39,False,ambas clases
+train,11/153,2,1,1,160,a vehicle turns left across path at signalized junctions,16,96,False,ambas clases
+train,11/154,3,2,1,130,a vehicle changes lanes with the same direction to ego-car/another vehicle,2,66,False,ambas clases
+train,11/156,3,1,2,188,a vehicle changes lanes with the same direction to ego-car/another vehicle,12,124,False,ambas clases
+train,11/157,4,2,2,194,vehicles  meet on the road,2,130,False,ambas clases
+train,11/158,2,1,1,137,ego-car turns left across path at non-signalized junctions,9,73,False,ambas clases
+train,11/159,3,1,2,249,ego-car  turns right across path at non-signalized junctions,9,121,False,ambas clases
+train,11/160,3,1,2,207,a vehicle changes lanes with the same direction to ego-car/another vehicle,15,127,False,ambas clases
+train,11/161,3,2,1,100,a vehicle changes lanes with the same direction to ego-car/another vehicle,4,36,False,ambas clases
+train,11/162,3,1,2,286,lead vehicle decelerates,14,174,False,ambas clases
+train,11/166,3,1,2,240,a vehicle changes lanes with the same direction to ego-car/another vehicle,16,176,False,ambas clases
+train,11/169,3,1,2,184,lead vehicle stops,8,120,False,ambas clases
+train,11/170,3,1,2,184,ego-car turns right across path at signalized junctions,8,120,False,ambas clases
+train,11/171,3,2,1,145,a vehicle changes lanes with the same direction to ego-car/another vehicle,1,81,False,ambas clases
+train,11/172,3,2,1,100,ego-car changes lanes,4,36,False,ambas clases
+train,11/174,2,1,1,139,a vehicle turns on a road with the same direction to ego-car/another vehicle,11,75,False,ambas clases
+train,11/179,2,1,1,140,a vehicle changes lanes with the same direction to ego-car/another vehicle,12,76,False,ambas clases
+train,11/180,3,2,1,130,a vehicle changes lanes with the same direction to ego-car/another vehicle,2,66,False,ambas clases
+train,11/183,2,1,1,102,a vehicle turns on a road with the same direction to ego-car/another vehicle,6,38,False,ambas clases
+train,11/184,2,1,1,103,a vehicle turns right across path at non-signalized junctions,7,39,False,ambas clases
+train,11/185,3,1,2,217,lead vehicle stops,9,153,False,ambas clases
+train,11/188,3,1,2,231,vehicles  meet on the road,7,167,False,ambas clases
+train,11/190,3,2,1,146,lead vehicle stops,2,82,False,ambas clases
+train,11/191,2,1,1,143,a vehicle turns left across path at signalized junctions,15,79,False,ambas clases
+train,11/193,3,1,2,360,lead vehicle stops,8,120,False,ambas clases
+train,11/195,3,1,2,182,lead vehicle stops,6,118,False,ambas clases
+train,11/197,3,2,1,115,lead vehicle stops,3,51,False,ambas clases
+train,11/200,2,1,1,120,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,56,False,ambas clases
+train,11/202,3,1,2,252,ego-car turns left across path at non-signalized junctions,12,172,False,ambas clases
+train,11/204,2,1,1,102,a vehicle changes lanes with the same direction to ego-car/another vehicle,6,38,False,ambas clases
+train,11/205,3,1,2,239,lead vehicle stops,15,175,False,ambas clases
+train,11/206,3,1,2,234,lead vehicle decelerates,10,138,False,ambas clases
+train,11/207,2,1,1,153,lead vehicle stops,9,89,False,ambas clases
+train,11/210,3,1,2,220,a vehicle changes lanes with the same direction to ego-car/another vehicle,12,140,False,ambas clases
+train,11/211,3,1,2,188,a vehicle changes lanes with the same direction to ego-car/another vehicle,12,124,False,ambas clases
+train,11/212,2,1,1,176,lead vehicle decelerates,16,112,False,ambas clases
+train,11/213,2,1,1,156,lead vehicle stops,12,92,False,ambas clases
+train,11/214,2,1,1,124,a vehicle backes up into another vehicle,12,60,False,ambas clases
+train,11/215,3,1,2,265,lead vehicle stops,9,153,False,ambas clases
+train,11/217,4,2,2,212,a vehicle changes lanes with the same direction to ego-car/another vehicle,4,148,False,ambas clases
+train,11/218,3,2,1,146,vehicles  meet on the road,2,82,False,ambas clases
+train,11/220,3,1,2,183,lead vehicle decelerates,7,119,False,ambas clases
+train,11/222,2,1,1,144,lead vehicle stops,16,80,False,ambas clases
+train,11/224,2,1,1,119,lead vehicle decelerates,7,55,False,ambas clases
+train,11/229,3,1,2,192,vehicles  meet on the road,16,128,False,ambas clases
+train,11/231,2,1,1,165,lead vehicle stops,5,101,False,ambas clases
+train,11/232,3,1,2,234,a vehicle backes up into another vehicle,10,170,False,ambas clases
+train,11/234,2,1,1,124,ego-car  turns right across path at non-signalized junctions,12,60,False,ambas clases
+train,11/235,3,1,2,198,lead vehicle stops,6,134,False,ambas clases
+train,11/236,3,1,2,221,lead vehicle stops,13,157,False,ambas clases
+train,11/237,2,1,1,144,a vehicle changes lanes with the same direction to ego-car/another vehicle,16,80,False,ambas clases
+train,11/238,3,1,2,248,a vehicle drives away from the road edge,8,168,False,ambas clases
+train,11/241,2,1,1,150,a vehicle changes lanes with the same direction to ego-car/another vehicle,6,86,False,ambas clases
+train,11/244,3,1,2,285,a vehicle changes lanes with the same direction to ego-car/another vehicle,13,125,False,ambas clases
+train,11/247,4,2,2,209,a vehicle changes lanes with the same direction to ego-car/another vehicle,1,129,False,ambas clases
+train,11/248,3,2,1,130,a vehicle changes lanes with the same direction to ego-car/another vehicle,2,66,False,ambas clases
+train,11/249,3,1,2,192,a vehicle changes lanes with the same direction to ego-car/another vehicle,16,128,False,ambas clases
+train,11/250,4,2,2,244,a vehicle changes lanes with the same direction to ego-car/another vehicle,4,164,False,ambas clases
+train,11/252,4,2,2,260,a vehicle overtakes,4,164,False,ambas clases
+train,12/001,3,1,2,406,ego-car changes lanes,6,150,False,ambas clases
+train,12/002,3,1,2,360,a following vehicle makes a maneuver,8,136,False,ambas clases
+train,12/003,2,1,1,155,a vehicle changes lanes with the same direction to ego-car,11,91,False,ambas clases
+train,12/004,3,1,2,344,a vehicle changes lanes with the same direction to ego-car,8,136,False,ambas clases
+train,12/005,3,1,2,318,a vehicle changes lanes with the same direction to ego-car,14,174,False,ambas clases
+train,12/007,3,1,2,234,a vehicle changes lanes with the same direction to ego-car,10,170,False,ambas clases
+train,12/009,3,1,2,249,a vehicle changes lanes with the same direction to ego-car,9,137,False,ambas clases
+train,12/010,3,1,2,280,a vehicle overtakes,8,168,False,ambas clases
+train,12/011,3,2,1,132,a vehicle changes lanes with the same direction to ego-car,4,68,False,ambas clases
+train,12/012,1,1,0,92,a vehicle changes lanes with the same direction to ego-car,12,12,False,solo positivos
+train,12/014,3,1,2,343,a vehicle changes lanes with the same direction to ego-car,7,151,False,ambas clases
+train,12/015,2,1,1,135,a vehicle changes lanes with the same direction to ego-car,7,71,False,ambas clases
+train,12/017,3,1,2,230,ego-car changes lanes,6,166,False,ambas clases
+train,12/018,4,2,2,306,a vehicle overtakes,2,178,False,ambas clases
+train,12/019,2,1,1,172,ego-car overtakes,12,108,False,ambas clases
+train,12/021,4,2,2,194,a vehicle overtakes,2,130,False,ambas clases
+train,12/022,4,2,2,242,a vehicle overtakes,2,146,False,ambas clases
+train,12/025,2,1,1,134,a vehicle overtakes,6,70,False,ambas clases
+train,12/027,2,1,1,106,a vehicle overtakes,10,42,False,ambas clases
+train,12/029,3,1,2,264,a vehicle overtakes,8,120,False,ambas clases
+train,12/030,3,1,2,204,a vehicle overtakes,12,124,False,ambas clases
+train,12/031,3,1,2,182,a vehicle overtakes,6,118,False,ambas clases
+train,12/032,3,1,2,190,a vehicle overtakes,14,126,False,ambas clases
+train,12/033,2,1,1,154,ego-car overtakes,10,90,False,ambas clases
+train,12/034,2,1,1,128,a vehicle overtakes,16,64,False,ambas clases
+train,12/035,3,1,2,300,a vehicle overtakes,12,140,False,ambas clases
+train,12/036,2,1,1,134,a vehicle overtakes,6,70,False,ambas clases
+train,12/037,3,1,2,230,a vehicle overtakes,6,166,False,ambas clases
+train,12/038,2,1,1,102,a vehicle overtakes,6,38,False,ambas clases
+train,12/039,3,1,2,234,a vehicle changes lanes with the same direction to ego-car,10,170,False,ambas clases
+train,12/040,3,2,1,177,a vehicle changes lanes with the same direction to ego-car,1,113,False,ambas clases
+train,13/001,3,1,2,213,there is an object crash,5,133,False,ambas clases
+train,13/002,3,1,2,411,there is an object crash,11,171,False,ambas clases
+train,13/003,2,1,1,142,a following vehicle makes a maneuver,14,78,False,ambas clases
+train,13/004,3,1,2,213,there is an object crash,5,117,False,ambas clases
+train,13/005,3,1,2,280,there is an object crash,8,152,False,ambas clases
+train,13/006,4,2,2,260,a following vehicle makes a maneuver,4,180,False,ambas clases
+train,13/007,3,1,2,248,there is an object crash,8,168,False,ambas clases
+train,14/001,3,1,2,267,there is an object crash,11,171,False,ambas clases
+train,14/002,3,1,2,315,a vehicle changes lanes with the same direction to ego-car,11,171,False,ambas clases
+train,14/003,4,2,2,242,a vehicle changes lanes with the same direction to ego-car,2,162,False,ambas clases
+train,14/004,4,2,2,210,ego-car accelerates to turn on a road,2,146,False,ambas clases
+train,14/005,2,1,1,158,there is an object crash,14,94,False,ambas clases
+train,14/006,3,1,2,278,ego-car accelerately goes straight at non-signalized junctions,6,150,False,ambas clases
+train,14/008,3,1,2,240,ego-car goes straight crossing paths at non-signalized junctions,16,160,False,ambas clases
+train,14/009,3,1,2,182,ego-car accelerates to turn on a road,6,118,False,ambas clases
+train,14/011,4,2,2,338,a vehicle changes lanes with the same direction to ego-car,2,130,False,ambas clases
+train,14/012,4,2,2,228,ego-car is out of control,4,164,False,ambas clases
+train,14/013,3,1,2,334,ego-car turns at non-signalized junctions,14,174,False,ambas clases
+train,14/014,3,1,2,439,ego-car accelerating to turn on a road,7,135,False,ambas clases
+train,14/015,2,1,1,136,ego-car controls loss,8,72,False,ambas clases
+train,14/017,3,1,2,197,ego-car controls loss,5,133,False,ambas clases
+train,14/018,4,2,2,386,ego-car controls loss,2,162,False,ambas clases
+train,14/019,2,1,1,140,ego-car controls loss,12,76,False,ambas clases
+train,14/020,3,1,2,300,ego-car controls loss,12,172,False,ambas clases
+train,14/022,3,1,2,220,ego-car  turns right across path at non-signalized junctions,12,140,False,ambas clases
+train,14/024,2,1,1,153,ego-car controls loss,9,89,False,ambas clases
+train,14/025,3,2,1,180,ego-car controls loss,4,116,False,ambas clases
+train,14/026,3,1,2,204,ego-car controls loss,12,140,False,ambas clases
+train,14/027,2,1,1,122,ego-car controls loss,10,58,False,ambas clases
+train,14/028,3,2,1,180,ego-car changes lanes,4,116,False,ambas clases
+train,14/029,3,2,1,145,ego-car controls loss,1,81,False,ambas clases
+train,14/030,2,1,1,124,ego-car changes lanes,12,60,False,ambas clases
+train,14/031,3,1,2,183,ego-car controls loss,7,119,False,ambas clases
+train,15/001,3,1,2,240,ego-car controls loss,16,160,False,ambas clases
+train,15/002,4,2,2,194,there is an object crash,2,130,False,ambas clases
+train,15/003,3,1,2,245,there is an object crash,5,165,False,ambas clases
+train,16/001,2,1,1,171,ego-car controls loss,11,107,False,ambas clases
+train,18/001,4,2,2,212,there is an object crash,4,132,False,ambas clases
+train,18/005,4,2,2,228,there is an object crash,4,164,False,ambas clases
+train,18/006,4,2,2,372,there is an object crash,4,148,False,ambas clases
+train,18/007,3,2,1,100,ego-car changes lanes,4,36,False,ambas clases
+train,2/001,3,1,2,240,ego-car drives slowly on congested road,16,160,False,ambas clases
+train,2/004,2,1,1,150,ego-car controls loss,6,86,False,ambas clases
+train,2/005,3,1,2,218,ego-car turns left across path at non-signalized junctions,10,154,False,ambas clases
+train,2/006,3,1,2,270,ego-car controls loss,14,174,False,ambas clases
+train,20/001,3,1,2,182,a vehicle turns on a road with the same direction to vehicle,6,118,False,ambas clases
+train,21/002,4,2,2,212,a vehicle turns right across path at non-signalized junctions,4,132,False,ambas clases
+train,21/003,2,1,1,154,there is an object crash,10,90,False,ambas clases
+train,21/004,3,1,2,328,a vehicle is out of control,8,168,False,ambas clases
+train,21/005,2,1,1,166,a vehicle turns left across path at signalized junctions,6,102,False,ambas clases
+train,22/001,2,1,1,124,a motorbike is out of control,12,60,False,ambas clases
+train,23/001,2,1,1,170,a vehicle is out of control,10,106,False,ambas clases
+train,24/001,2,1,1,155,a vehicle is out of control,11,91,False,ambas clases
+train,24/002,3,1,2,525,a vehicle is out of control,13,125,False,ambas clases
+train,24/004,3,1,2,357,a vehicle is out of control,5,133,False,ambas clases
+train,24/005,3,1,2,375,a vehicle is out of control,7,151,False,ambas clases
+train,24/006,4,2,2,322,a vehicle is out of control,2,178,False,ambas clases
+train,24/007,3,1,2,215,a vehicle is out of control,7,151,False,ambas clases
+train,24/009,2,1,1,120,a vehicle turns left across path at non-signalized junctions,8,56,False,ambas clases
+train,24/012,2,1,1,157,a vehicle changes lanes with the same direction to ego-car/another vehicle,13,93,False,ambas clases
+train,24/015,3,1,2,455,a vehicle changes lanes with the same direction to ego-car/another vehicle,7,167,False,ambas clases
+train,24/017,3,1,2,236,a vehicle changes lanes with the same direction to ego-car/another vehicle,12,172,False,ambas clases
+train,3/001,4,2,2,404,a cyclist crosses the road,4,180,False,ambas clases
+train,3/002,3,1,2,184,a cyclist crosses the road,8,120,False,ambas clases
+train,3/004,4,2,2,355,a cyclist crosses the road,3,147,False,ambas clases
+train,3/006,2,1,1,155,a cyclist crosses the road,11,91,False,ambas clases
+train,3/007,3,2,1,100,a cyclist crosses the road,4,36,False,ambas clases
+train,3/008,3,1,2,360,a cyclist crosses the road,8,168,False,ambas clases
+train,3/009,3,1,2,230,a cyclist crosses the road,6,118,False,ambas clases
+train,3/010,3,1,2,345,a cyclist crosses the road,9,169,False,ambas clases
+train,3/011,2,1,1,170,a cyclist crosses the road,10,106,False,ambas clases
+train,3/012,2,1,1,170,a cyclist crosses the road,10,106,False,ambas clases
+train,3/014,2,1,1,118,a cyclist crosses the road,6,54,False,ambas clases
+train,3/015,3,1,2,215,a cyclist crosses the road,7,135,False,ambas clases
+train,3/016,3,1,2,204,a cyclist crosses the road,12,140,False,ambas clases
+train,30/001,3,1,2,300,a vehicle is out of control,12,172,False,ambas clases
+train,33/001,3,1,2,247,a vehicle backes up into another vehicle,7,167,False,ambas clases
+train,34/001,1,1,0,94,there is an object crash,14,14,False,solo positivos
+train,36/002,3,1,2,278,there is an object crash,6,134,False,ambas clases
+train,37/001,4,2,2,420,a motorbike is out of control,4,148,False,ambas clases
+train,37/004,3,1,2,443,a motorbike is out of control,11,155,False,ambas clases
+train,37/005,3,1,2,202,a motorbike is out of control,10,138,False,ambas clases
+train,37/006,3,1,2,400,a motorbike is out of control,16,176,False,ambas clases
+train,37/008,4,2,2,387,a motorbike is out of control,3,179,False,ambas clases
+train,37/009,2,1,1,124,a motorbike is out of control,12,60,False,ambas clases
+train,37/010,2,1,1,155,a motorbike is out of control,11,91,False,ambas clases
+train,37/014,3,1,2,279,a motorbike is out of control,7,167,False,ambas clases
+train,37/015,2,1,1,96,a motorbike is out of control,16,32,False,ambas clases
+train,37/023,2,1,1,176,a motorbike is out of control,16,112,False,ambas clases
+train,37/025,3,1,2,316,a motorbike is out of control,12,124,False,ambas clases
+train,37/026,2,1,1,176,a motorbike is out of control,16,112,False,ambas clases
+train,37/027,2,1,1,96,a motorbike is out of control,16,32,False,ambas clases
+train,37/029,1,1,0,92,a motorbike is out of control,12,12,False,solo positivos
+train,37/031,2,1,1,138,a motorbike is out of control,10,74,False,ambas clases
+train,37/032,2,1,1,105,a motorbike is out of control,9,41,False,ambas clases
+train,37/033,2,1,1,110,a motorbike is out of control,14,46,False,ambas clases
+train,37/035,2,1,1,150,a motorbike is out of control,6,86,False,ambas clases
+train,37/036,1,1,0,92,a motorbike is out of control,12,12,False,solo positivos
+train,37/039,2,0,2,0,no accident,-128,-64,True,solo negativos
+train,37/042,2,1,1,108,a motorbike is out of control,12,44,False,ambas clases
+train,37/043,3,2,1,100,a motorbike is out of control,4,36,False,ambas clases
+train,37/045,3,2,1,116,a motorbike is out of control,4,52,False,ambas clases
+train,37/046,2,1,1,154,a motorbike is out of control,10,90,False,ambas clases
+train,37/047,1,1,0,94,a motorbike is out of control,14,14,False,solo positivos
+train,37/054,4,2,2,195,a motorbike is out of control,3,131,False,ambas clases
+train,37/055,3,2,1,114,a motorbike is out of control,2,50,False,ambas clases
+train,37/056,3,1,2,200,a motorbike is out of control,8,136,False,ambas clases
+train,37/057,3,1,2,255,a motorbike is out of control,15,143,False,ambas clases
+train,37/060,3,1,2,199,a motorbike is out of control,7,135,False,ambas clases
+train,37/063,3,1,2,200,a motorbike is out of control,8,136,False,ambas clases
+train,37/067,2,1,1,120,a motorbike is out of control,8,56,False,ambas clases
+train,37/069,3,1,2,216,a motorbike is out of control,8,152,False,ambas clases
+train,37/070,2,1,1,150,a motorbike is out of control,6,86,False,ambas clases
+train,37/071,3,2,1,130,a motorbike is out of control,2,66,False,ambas clases
+train,37/074,3,1,2,203,a motorbike is out of control,11,139,False,ambas clases
+train,37/076,3,1,2,218,a motorbike is out of control,10,122,False,ambas clases
+train,37/077,2,1,1,126,a motorbike is out of control,14,62,False,ambas clases
+train,37/079,2,1,1,156,a motorbike is out of control,12,92,False,ambas clases
+train,37/080,3,2,1,130,a motorbike is out of control,2,66,False,ambas clases
+train,37/083,2,1,1,110,a motorbike is out of control,14,46,False,ambas clases
+train,37/084,3,1,2,190,a motorbike is out of control,14,126,False,ambas clases
+train,37/085,3,1,2,272,a motorbike is out of control,16,144,False,ambas clases
+train,38/001,2,1,1,170,a motorbike changes lines into motorway,10,106,False,ambas clases
+train,38/003,1,1,0,90,a motorbike crosses the road,10,10,False,solo positivos
+train,38/005,3,1,2,456,a motorbike crosses the road,8,136,False,ambas clases
+train,38/007,2,1,1,136,a motorbike changes lines into motorway,8,72,False,ambas clases
+train,38/008,3,1,2,190,a motorbike crosses the road,14,126,False,ambas clases
+train,38/012,3,1,2,264,a motorbike crosses the road,8,152,False,ambas clases
+train,38/013,3,1,2,460,a motorbike turns left across path at signalized junctions,12,172,False,ambas clases
+train,38/016,2,1,1,103,a motorbike crosses the road,7,39,False,ambas clases
+train,38/018,3,1,2,456,a motorbike crosses the road,8,120,False,ambas clases
+train,38/019,2,1,1,126,a motorbike turns left across path at signalized junctions,14,62,False,ambas clases
+train,38/022,2,1,1,141,a motorbike crosses the road,13,77,False,ambas clases
+train,38/024,4,2,2,260,a motorbike crosses the road,4,164,False,ambas clases
+train,38/027,2,1,1,110,a motorbike crosses the road,14,46,False,ambas clases
+train,38/029,3,1,2,236,a motorbike retrogrades,12,172,False,ambas clases
+train,38/033,3,1,2,282,a motorbike crosses the road,10,138,False,ambas clases
+train,38/036,3,2,1,164,a motorbike crosses the road,4,100,False,ambas clases
+train,38/038,2,1,1,140,lead motorcycle stops,12,76,False,ambas clases
+train,38/039,3,2,1,146,a motorbike crosses the road,2,82,False,ambas clases
+train,38/040,2,1,1,140,a motorbike turns left across path at non-signalized junctions,12,76,False,ambas clases
+train,38/041,4,2,2,212,a motorbike changes lines into motorway,4,132,False,ambas clases
+train,38/042,2,1,1,108,a motorbike turns left across path at signalized junctions,12,44,False,ambas clases
+train,38/043,2,1,1,125,a motorbike changes lines into motorway,13,61,False,ambas clases
+train,38/048,2,1,1,144,a motorbike turns left across path at signalized junctions,16,80,False,ambas clases
+train,38/049,3,2,1,115,a motorbike turns left across path at signalized junctions,3,51,False,ambas clases
+train,38/050,1,1,0,90,a motorbike crosses the road,10,10,False,solo positivos
+train,38/051,3,1,2,220,lead motorcycle stops,12,156,False,ambas clases
+train,38/053,3,2,1,132,a motorbike changes lines into motorway,4,68,False,ambas clases
+train,38/056,3,1,2,182,a motorbike turns right across path at signalized junctions,6,118,False,ambas clases
+train,38/057,2,1,1,155,a motorbike retrogrades,11,91,False,ambas clases
+train,38/061,3,2,1,130,a motorbike turns left across path at signalized junctions,2,66,False,ambas clases
+train,38/062,3,2,1,145,a motorbike retrogrades,1,81,False,ambas clases
+train,38/067,3,2,1,97,a motorbike turns right across path at non-signalized junctions,1,33,False,ambas clases
+train,39/001,2,1,1,105,a vehicle is out of control,9,41,False,ambas clases
+train,39/002,4,2,2,403,a vehicle is out of control,3,179,False,ambas clases
+train,39/004,3,2,1,132,a vehicle is out of control,4,68,False,ambas clases
+train,39/005,4,2,2,305,a vehicle is out of control,1,177,False,ambas clases
+train,39/006,2,1,1,160,a vehicle is out of control,16,96,False,ambas clases
+train,39/007,3,1,2,288,a vehicle is out of control,16,176,False,ambas clases
+train,39/009,4,2,2,465,a vehicle is out of control,1,177,False,ambas clases
+train,39/010,4,2,2,290,a vehicle is out of control,2,178,False,ambas clases
+train,39/013,3,1,2,232,a vehicle is out of control,8,120,False,ambas clases
+train,39/014,3,2,1,148,a vehicle is out of control,4,84,False,ambas clases
+train,39/019,3,2,1,164,a vehicle is out of control,4,100,False,ambas clases
+train,39/020,3,1,2,234,a vehicle is out of control,10,170,False,ambas clases
+train,39/022,2,1,1,165,a vehicle is out of control,5,101,False,ambas clases
+train,39/023,2,1,1,110,a vehicle is out of control,14,46,False,ambas clases
+train,39/026,2,1,1,102,a vehicle is out of control,6,38,False,ambas clases
+train,39/028,3,1,2,279,a vehicle is out of control,7,167,False,ambas clases
+train,39/029,2,1,1,120,a vehicle is out of control,8,56,False,ambas clases
+train,39/030,3,1,2,246,a vehicle is out of control,6,118,False,ambas clases
+train,4/002,2,1,1,150,ego-car turns left across path at non-signalized junctions,6,86,False,ambas clases
+train,4/003,3,2,1,115,a cyclist changes lines into motorway,3,51,False,ambas clases
+train,4/004,3,1,2,224,ego-car turns left across path at non-signalized junctions,16,128,False,ambas clases
+train,4/008,2,1,1,140,a cyclist changes lines into motorway,12,76,False,ambas clases
+train,4/009,1,1,0,94,ego-car  turns right across path at non-signalized junctions,14,14,False,solo positivos
+train,4/010,3,2,1,145,a cyclist changes lines into motorway,1,81,False,ambas clases
+train,4/011,2,1,1,153,ego-car goes straight crossing paths at non-signalized junctions,9,89,False,ambas clases
+train,40/002,3,1,2,182,lead vehicle stops,6,118,False,ambas clases
+train,40/003,2,1,1,170,a vehicle is out of control,10,106,False,ambas clases
+train,40/004,3,1,2,232,a vehicle is out of control,8,152,False,ambas clases
+train,40/007,3,1,2,326,a vehicle changes lanes with the same direction to ego-car/another vehicle,6,134,False,ambas clases
+train,40/010,3,1,2,286,a vehicle is out of control,14,158,False,ambas clases
+train,40/011,3,1,2,282,a vehicle changes lanes with the same direction to ego-car/another vehicle,10,122,False,ambas clases
+train,40/012,4,2,2,194,lead vehicle stops,2,130,False,ambas clases
+train,40/013,2,0,2,0,lead vehicle stops,-192,-64,True,solo negativos
+train,40/014,3,1,2,189,a vehicle turns left across path at signalized junctions,13,125,False,ambas clases
+train,41/002,2,1,1,104,a vehicle is out of control,8,40,False,ambas clases
+train,41/003,3,1,2,332,a vehicle is out of control,12,172,False,ambas clases
+train,41/008,3,1,2,684,a vehicle is out of control,12,156,False,ambas clases
+train,41/009,3,1,2,224,a vehicle is out of control,16,144,False,ambas clases
+train,41/012,3,1,2,192,a vehicle is out of control,16,128,False,ambas clases
+train,41/016,3,2,1,116,a vehicle is out of control,4,52,False,ambas clases
+train,42/001,3,1,2,282,a vehicle is out of control,10,170,False,ambas clases
+train,42/002,4,2,2,196,a vehicle is out of control,4,132,False,ambas clases
+train,42/003,3,1,2,190,a vehicle is out of control,14,126,False,ambas clases
+train,42/004,3,2,1,146,a vehicle is out of control,2,82,False,ambas clases
+train,42/008,2,1,1,140,a vehicle is out of control,12,76,False,ambas clases
+train,42/009,3,1,2,208,a vehicle is out of control,16,144,False,ambas clases
+train,42/011,3,1,2,240,a vehicle is out of control,16,176,False,ambas clases
+train,42/012,2,1,1,95,a vehicle is out of control,15,31,False,ambas clases
+train,42/015,1,1,0,92,a vehicle is out of control,12,12,False,solo positivos
+train,42/018,2,1,1,102,a vehicle is out of control,6,38,False,ambas clases
+train,42/022,2,1,1,170,a vehicle is out of control,10,106,False,ambas clases
+train,43/001,2,1,1,120,lead vehicle stops,8,56,False,ambas clases
+train,43/002,3,2,1,115,a vehicle turns left across path at non-signalized junctions,3,51,False,ambas clases
+train,43/003,2,1,1,106,a vehicle crosses the road,10,42,False,ambas clases
+train,43/004,3,1,2,185,lead vehicle stops,9,121,False,ambas clases
+train,43/005,3,1,2,350,lead vehicle stops,14,126,False,ambas clases
+train,43/006,3,1,2,332,vehicles  meet on the road,12,156,False,ambas clases
+train,43/007,2,1,1,150,a vehicle crosses the road,6,86,False,ambas clases
+train,43/010,4,2,2,369,lead vehicle stops,1,177,False,ambas clases
+train,43/011,3,1,2,396,a vehicle changes lanes with the same direction to ego-car/another vehicle,12,140,False,ambas clases
+train,43/013,3,1,2,352,lead vehicle stops,16,160,False,ambas clases
+train,43/014,2,1,1,124,vehicles  meet on the road,12,60,False,ambas clases
+train,43/015,3,1,2,320,lead vehicle stops,16,144,False,ambas clases
+train,43/017,2,1,1,96,a vehicle crosses the road,16,32,False,ambas clases
+train,43/018,3,2,1,100,a vehicle turns left across path at signalized junctions,4,36,False,ambas clases
+train,43/020,2,1,1,95,a vehicle changes lanes with the same direction to ego-car/another vehicle,15,31,False,ambas clases
+train,43/021,2,1,1,140,a vehicle changes lanes with the same direction to ego-car/another vehicle,12,76,False,ambas clases
+train,43/022,2,1,1,110,lead vehicle stops,14,46,False,ambas clases
+train,43/025,3,1,2,272,lead vehicle stops,16,160,False,ambas clases
+train,43/026,3,1,2,248,lead vehicle stops,8,136,False,ambas clases
+train,43/031,2,1,1,150,a vehicle changes lanes with the same direction to ego-car/another vehicle,6,86,False,ambas clases
+train,43/032,3,1,2,184,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,120,False,ambas clases
+train,43/035,3,1,2,183,a vehicle crosses the road,7,119,False,ambas clases
+train,43/037,4,2,2,370,a vehicle turns right across path at non-signalized junctions,2,178,False,ambas clases
+train,43/038,3,1,2,310,a vehicle turns left across path at non-signalized junctions,6,166,False,ambas clases
+train,43/039,4,2,2,340,a vehicle turns left across path at non-signalized junctions,4,180,False,ambas clases
+train,43/042,3,1,2,374,a vehicle turns left across path at non-signalized junctions,6,150,False,ambas clases
+train,43/046,3,1,2,316,a vehicle backes up into another vehicle,12,156,False,ambas clases
+train,43/047,3,1,2,296,lead vehicle stops,8,168,False,ambas clases
+train,43/049,3,1,2,234,lead vehicle stops,10,170,False,ambas clases
+train,43/050,3,1,2,222,a vehicle turns left across path at non-signalized junctions,14,158,False,ambas clases
+train,43/051,1,1,0,90,a vehicle turns left across path at non-signalized junctions,10,10,False,solo positivos
+train,43/052,3,2,1,178,lead vehicle stops,2,114,False,ambas clases
+train,43/054,2,1,1,105,a vehicle crosses the road,9,41,False,ambas clases
+train,43/069,3,2,1,129,lead vehicle stops,1,65,False,ambas clases
+train,43/070,2,1,1,160,lead vehicle stops,16,96,False,ambas clases
+train,43/071,3,1,2,200,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,136,False,ambas clases
+train,43/073,3,1,2,186,a vehicle turns left across path at signalized junctions,10,122,False,ambas clases
+train,43/074,3,1,2,219,a vehicle crosses the road,11,155,False,ambas clases
+train,43/078,2,1,1,120,a vehicle turns on a road with the opposite direction to ego-car/another vehicle,8,56,False,ambas clases
+train,43/080,3,2,1,100,a vehicle crosses the road,4,36,False,ambas clases
+train,43/082,3,1,2,270,a vehicle backes up into another vehicle,14,174,False,ambas clases
+train,43/083,3,1,2,186,a vehicle turns left across path at signalized junctions,10,122,False,ambas clases
+train,43/085,2,1,1,160,a vehicle changes lanes with the same direction to ego-car/another vehicle,16,96,False,ambas clases
+train,43/086,1,1,0,90,lead vehicle stops,10,10,False,solo positivos
+train,43/089,3,1,2,230,a vehicle turns on a road with the opposite direction to ego-car/another vehicle,6,134,False,ambas clases
+train,43/093,2,1,1,165,lead vehicle stops,5,101,False,ambas clases
+train,43/094,2,1,1,160,a vehicle crosses the road,16,96,False,ambas clases
+train,43/096,3,1,2,350,a vehicle backes up into another vehicle,14,142,False,ambas clases
+train,43/097,3,2,1,130,lead vehicle stops,2,66,False,ambas clases
+train,43/099,3,1,2,197,a vehicle backes up into another vehicle,5,133,False,ambas clases
+train,43/100,2,1,1,120,lead vehicle stops,8,56,False,ambas clases
+train,43/101,1,1,0,90,lead vehicle stops,10,10,False,solo positivos
+train,43/102,4,2,2,210,lead vehicle decelerates,2,146,False,ambas clases
+train,43/103,2,1,1,165,a vehicle crosses the road,5,101,False,ambas clases
+train,43/104,2,1,1,167,a vehicle turns on a road with the same direction to ego-car/another vehicle,7,103,False,ambas clases
+train,43/106,2,1,1,112,a vehicle is out of control,16,48,False,ambas clases
+train,43/108,2,1,1,103,a vehicle crosses the road,7,39,False,ambas clases
+train,43/110,2,1,1,120,lead vehicle stops,8,56,False,ambas clases
+train,43/112,2,1,1,156,a vehicle turns left across path at non-signalized junctions,12,92,False,ambas clases
+train,43/113,2,1,1,110,lead vehicle stops,14,46,False,ambas clases
+train,43/114,3,1,2,184,a vehicle turns left across path at signalized junctions,8,120,False,ambas clases
+train,43/115,3,1,2,204,a vehicle is out of control,12,140,False,ambas clases
+train,43/119,2,1,1,120,a vehicle turns left across path at signalized junctions,8,56,False,ambas clases
+train,43/121,4,2,2,243,lead vehicle stops,3,163,False,ambas clases
+train,43/122,2,1,1,108,a vehicle crosses the road,12,44,False,ambas clases
+train,43/125,3,2,1,162,lead vehicle stops,2,98,False,ambas clases
+train,43/127,2,1,1,150,lead vehicle stops,6,86,False,ambas clases
+train,43/128,2,1,1,158,a vehicle turns on a road with the opposite direction to ego-car/another vehicle,14,94,False,ambas clases
+train,43/130,3,1,2,334,a vehicle turns right across path at signalized junctions,14,158,False,ambas clases
+train,43/131,2,1,1,138,a vehicle is out of control,10,74,False,ambas clases
+train,43/136,3,1,2,186,a vehicle changes lanes with the same direction to ego-car/another vehicle,10,122,False,ambas clases
+train,43/137,2,1,1,150,a vehicle overtakes,6,86,False,ambas clases
+train,43/138,1,1,0,92,lead vehicle stops,12,12,False,solo positivos
+train,43/140,3,2,1,180,lead vehicle stops,4,116,False,ambas clases
+train,43/141,1,1,0,93,lead vehicle stops,13,13,False,solo positivos
+train,43/142,4,2,2,194,a vehicle changes lanes with the same direction to ego-car/another vehicle,2,130,False,ambas clases
+train,43/143,2,1,1,142,a vehicle crosses the road,14,78,False,ambas clases
+train,43/144,2,1,1,127,a vehicle changes lanes with the same direction to ego-car/another vehicle,15,63,False,ambas clases
+train,43/146,2,1,1,160,a vehicle backes up into another vehicle,16,96,False,ambas clases
+train,43/149,2,1,1,144,a vehicle changes lanes with the same direction to ego-car/another vehicle,16,80,False,ambas clases
+train,43/150,3,1,2,234,a vehicle changes lanes with the same direction to ego-car/another vehicle,10,170,False,ambas clases
+train,43/152,2,1,1,160,a vehicle turns on a road with the opposite direction to ego-car/another vehicle,16,96,False,ambas clases
+train,43/153,2,1,1,95,lead vehicle stops,15,31,False,ambas clases
+train,43/159,3,1,2,200,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,136,False,ambas clases
+train,43/161,3,2,1,130,a vehicle changes lanes with the same direction to ego-car/another vehicle,2,66,False,ambas clases
+train,43/163,3,1,2,190,lead vehicle stops,14,126,False,ambas clases
+train,43/164,4,2,2,290,a vehicle changes lanes with the same direction to ego-car/another vehicle,2,162,False,ambas clases
+train,43/165,3,1,2,245,a vehicle changes lanes with the same direction to ego-car/another vehicle,5,149,False,ambas clases
+train,43/166,3,1,2,184,a vehicle turns left across path at signalized junctions,8,120,False,ambas clases
+train,43/167,3,1,2,256,a vehicle changes lanes with the same direction to ego-car/another vehicle,16,176,False,ambas clases
+train,43/168,2,1,1,128,a vehicle turns right across path at signalized junctions,16,64,False,ambas clases
+train,43/170,3,1,2,184,a vehicle crosses the road,8,120,False,ambas clases
+train,43/173,2,1,1,159,lead vehicle stops,15,95,False,ambas clases
+train,43/175,3,1,2,400,a vehicle crosses the road,16,176,False,ambas clases
+train,43/176,3,1,2,214,a vehicle changes lanes with the same direction to ego-car/another vehicle,6,150,False,ambas clases
+train,43/181,2,1,1,120,a vehicle crosses the road,8,56,False,ambas clases
+train,43/183,3,2,1,132,a vehicle changes lanes with the same direction to ego-car/another vehicle,4,68,False,ambas clases
+train,43/186,2,1,1,106,a vehicle turns right across path at non-signalized junctions,10,42,False,ambas clases
+train,43/187,2,1,1,152,a vehicle crosses the road,8,88,False,ambas clases
+train,43/190,2,1,1,142,vehicles  meet on the road,14,78,False,ambas clases
+train,43/192,2,1,1,124,a vehicle changes lanes with the same direction to ego-car/another vehicle,12,60,False,ambas clases
+train,43/193,2,1,1,96,vehicles  meet on the road,16,32,False,ambas clases
+train,43/198,3,1,2,233,lead vehicle stops,9,169,False,ambas clases
+train,43/201,3,1,2,280,a vehicle crosses the road,8,152,False,ambas clases
+train,43/202,2,1,1,108,a vehicle turns right across path at signalized junctions,12,44,False,ambas clases
+train,43/203,3,2,1,148,a vehicle changes lanes with the same direction to ego-car/another vehicle,4,84,False,ambas clases
+train,43/204,4,2,2,212,a vehicle turns on a road with the same direction to ego-car/another vehicle,4,148,False,ambas clases
+train,43/208,3,1,2,186,a vehicle crosses the road,10,122,False,ambas clases
+train,44/002,4,2,2,212,a vehicle is out of control,4,148,False,ambas clases
+train,45/003,3,2,1,146,a motorbike crosses the road,2,82,False,ambas clases
+train,45/005,3,2,1,180,a vehicle turns right across path at non-signalized junctions,4,116,False,ambas clases
+train,45/006,3,1,2,286,a vehicle changes lanes with the same direction to ego-car/another vehicle,14,174,False,ambas clases
+train,45/007,3,2,1,114,lead motorcycle stops,2,50,False,ambas clases
+train,45/008,3,1,2,188,a motorbike turns right across path at signalized junctions,12,124,False,ambas clases
+train,45/009,3,1,2,186,a motorbike crosses the road,10,122,False,ambas clases
+train,47/001,3,2,1,146,a motorbike changes lines into motorway,2,82,False,ambas clases
+train,48/002,3,2,1,100,lead vehicle stops,4,36,False,ambas clases
+train,48/004,4,2,2,274,lead vehicle stops,2,146,False,ambas clases
+train,48/008,3,1,2,336,a vehicle changes lanes with the same direction to ego-car/another vehicle,16,160,False,ambas clases
+train,48/009,3,1,2,344,lead vehicle stops,8,168,False,ambas clases
+train,48/010,2,1,1,170,a vehicle changes lanes with the same direction to ego-car/another vehicle,10,106,False,ambas clases
+train,48/011,2,1,1,160,a vehicle turns left across path at signalized junctions,16,96,False,ambas clases
+train,48/017,3,2,1,100,lead vehicle stops,4,36,False,ambas clases
+train,48/018,4,2,2,274,a vehicle changes lanes with the same direction to ego-car/another vehicle,2,178,False,ambas clases
+train,48/019,2,1,1,150,lead vehicle stops,6,86,False,ambas clases
+train,48/020,3,1,2,318,lead vehicle stops,14,158,False,ambas clases
+train,48/021,3,1,2,300,lead vehicle decelerates,12,156,False,ambas clases
+train,48/022,3,1,2,262,a vehicle is out of control,6,166,False,ambas clases
+train,48/024,3,2,1,161,a vehicle turns left across path at signalized junctions,1,97,False,ambas clases
+train,48/027,2,1,1,156,a vehicle changes lanes with the same direction to ego-car/another vehicle,12,92,False,ambas clases
+train,48/028,3,1,2,240,lead vehicle stops,16,144,False,ambas clases
+train,48/029,1,1,0,94,lead vehicle stops,14,14,False,solo positivos
+train,48/030,2,1,1,102,vehicles  meet on the road,6,38,False,ambas clases
+train,48/031,2,1,1,160,a vehicle crosses the road,16,96,False,ambas clases
+train,48/032,3,1,2,189,a vehicle turns left across path at signalized junctions,13,125,False,ambas clases
+train,48/034,2,1,1,170,a vehicle turns left across path at signalized junctions,10,106,False,ambas clases
+train,48/035,3,2,1,100,a vehicle crosses the road,4,36,False,ambas clases
+train,48/037,3,2,1,129,lead vehicle stops,1,65,False,ambas clases
+train,48/038,3,1,2,365,a vehicle crosses the road,13,173,False,ambas clases
+train,48/040,3,1,2,236,a vehicle crosses the road,12,172,False,ambas clases
+train,48/041,3,1,2,198,a vehicle backes up into another vehicle,6,134,False,ambas clases
+train,48/042,2,1,1,150,a vehicle changes lanes with the same direction to ego-car/another vehicle,6,86,False,ambas clases
+train,48/044,3,1,2,220,a vehicle crosses the road,12,156,False,ambas clases
+train,48/049,4,2,2,354,lead vehicle stops,2,146,False,ambas clases
+train,48/050,3,1,2,346,lead vehicle stops,10,154,False,ambas clases
+train,48/053,3,2,1,178,a vehicle changes lanes with the same direction to ego-car/another vehicle,2,114,False,ambas clases
+train,48/056,3,1,2,316,lead vehicle stops,12,140,False,ambas clases
+train,48/062,3,2,1,114,a vehicle changes lanes with the same direction to ego-car/another vehicle,2,50,False,ambas clases
+train,48/067,3,2,1,113,a vehicle crosses the road,1,49,False,ambas clases
+train,48/070,3,1,2,336,a vehicle changes lanes with the same direction to ego-car/another vehicle,16,144,False,ambas clases
+train,48/073,2,1,1,152,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,88,False,ambas clases
+train,48/075,2,1,1,104,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,40,False,ambas clases
+train,48/076,3,1,2,245,lead vehicle stops,5,149,False,ambas clases
+train,48/079,4,2,2,225,vehicles  meet on the road,1,161,False,ambas clases
+train,48/081,3,1,2,204,lead vehicle decelerates,12,124,False,ambas clases
+train,49/001,3,1,2,280,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,152,False,ambas clases
+train,49/002,2,1,1,135,a vehicle changes lanes with the same direction to ego-car/another vehicle,7,71,False,ambas clases
+train,49/003,3,2,1,115,a vehicle changes lanes with the same direction to ego-car/another vehicle,3,51,False,ambas clases
+train,49/004,2,1,1,166,a vehicle changes lanes with the same direction to ego-car/another vehicle,6,102,False,ambas clases
+train,49/005,3,1,2,240,a vehicle changes lanes with the same direction to ego-car/another vehicle,16,176,False,ambas clases
+train,49/006,3,1,2,183,a vehicle changes lanes with the same direction to ego-car/another vehicle,7,119,False,ambas clases
+train,49/013,3,1,2,268,a vehicle changes lanes with the same direction to ego-car/another vehicle,12,172,False,ambas clases
+train,49/014,3,1,2,280,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,168,False,ambas clases
+train,49/015,3,1,2,216,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,120,False,ambas clases
+train,49/017,2,1,1,140,a vehicle changes lanes with the same direction to ego-car/another vehicle,12,76,False,ambas clases
+train,49/019,3,1,2,280,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,168,False,ambas clases
+train,49/020,3,1,2,268,a vehicle turns left across path at signalized junctions,12,156,False,ambas clases
+train,49/022,3,1,2,255,a vehicle changes lanes with the same direction to ego-car/another vehicle,15,175,False,ambas clases
+train,49/023,2,1,1,120,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,56,False,ambas clases
+train,49/025,3,1,2,200,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,136,False,ambas clases
+train,49/026,3,1,2,220,a vehicle backes up into another vehicle,12,156,False,ambas clases
+train,49/028,2,1,1,168,a vehicle backes up into another vehicle,8,104,False,ambas clases
+train,49/029,3,1,2,230,a vehicle changes lanes with the same direction to ego-car/another vehicle,6,166,False,ambas clases
+train,49/031,4,2,2,226,a vehicle changes lanes with the same direction to ego-car/another vehicle,2,162,False,ambas clases
+train,49/032,2,1,1,174,a vehicle changes lanes with the same direction to ego-car/another vehicle,14,110,False,ambas clases
+train,49/034,3,2,1,162,a vehicle changes lanes with the same direction to ego-car/another vehicle,2,98,False,ambas clases
+train,5/001,2,1,1,165,a motorbike crosses the road,5,101,False,ambas clases
+train,5/004,3,1,2,265,ego-car  turns right across path at non-signalized junctions,9,169,False,ambas clases
+train,5/005,4,2,2,210,a motorbike crosses the road,2,146,False,ambas clases
+train,5/008,3,1,2,282,a motorbike crosses the road,10,170,False,ambas clases
+train,5/009,3,1,2,410,a motorbike crosses the road,10,154,False,ambas clases
+train,5/010,2,1,1,95,a motorbike crosses the road,15,31,False,ambas clases
+train,5/011,3,2,1,100,a motorbike crosses the road,4,36,False,ambas clases
+train,5/012,3,1,2,430,a motorbike crosses the road,14,174,False,ambas clases
+train,5/013,3,1,2,215,a motorbike crosses the road,7,151,False,ambas clases
+train,5/014,3,1,2,424,a motorbike crosses the road,8,152,False,ambas clases
+train,5/018,2,1,1,133,a motorbike crosses the road,5,69,False,ambas clases
+train,5/019,3,1,2,240,a motorbike crosses the road,16,176,False,ambas clases
+train,5/021,2,1,1,133,a motorbike crosses the road,5,69,False,ambas clases
+train,5/022,4,2,2,370,a motorbike crosses the road,2,130,False,ambas clases
+train,5/023,3,1,2,280,a motorbike crosses the road,8,136,False,ambas clases
+train,5/024,4,2,2,290,a motorbike crosses the road,2,162,False,ambas clases
+train,5/027,3,2,1,145,a motorbike crosses the road,1,81,False,ambas clases
+train,5/028,3,1,2,252,a motorbike crosses the road,12,156,False,ambas clases
+train,5/029,3,1,2,317,a motorbike crosses the road,13,157,False,ambas clases
+train,5/030,3,1,2,328,a motorbike crosses the road,8,136,False,ambas clases
+train,5/032,3,1,2,222,a motorbike crosses the road,14,158,False,ambas clases
+train,5/034,3,1,2,302,a motorbike crosses the road,14,142,False,ambas clases
+train,5/035,3,1,2,396,a motorbike crosses the road,12,172,False,ambas clases
+train,5/036,4,2,2,228,a motorbike crosses the road,4,148,False,ambas clases
+train,5/038,3,1,2,423,a motorbike crosses the road,7,167,False,ambas clases
+train,5/039,3,1,2,256,a motorbike crosses the road,16,176,False,ambas clases
+train,5/040,3,1,2,346,a motorbike crosses the road,10,154,False,ambas clases
+train,5/042,3,2,1,177,a motorbike crosses the road,1,113,False,ambas clases
+train,5/043,4,2,2,465,a motorbike crosses the road,1,177,False,ambas clases
+train,5/045,4,2,2,210,a motorbike crosses the road,2,146,False,ambas clases
+train,5/049,3,2,1,129,a motorbike crosses the road,1,65,False,ambas clases
+train,5/053,4,2,2,242,a motorbike crosses the road,2,146,False,ambas clases
+train,5/055,3,1,2,282,a motorbike crosses the road,10,122,False,ambas clases
+train,5/057,3,1,2,282,a motorbike crosses the road,10,154,False,ambas clases
+train,5/059,2,1,1,118,a motorbike crosses the road,6,54,False,ambas clases
+train,5/061,3,1,2,463,a motorbike crosses the road,15,127,False,ambas clases
+train,5/062,2,1,1,142,a motorbike crosses the road,14,78,False,ambas clases
+train,5/063,4,2,2,420,a motorbike crosses the road,4,132,False,ambas clases
+train,5/065,3,2,1,178,a motorbike crosses the road,2,114,False,ambas clases
+train,5/066,3,1,2,277,a motorbike crosses the road,5,165,False,ambas clases
+train,5/067,1,1,0,94,a motorbike crosses the road,14,14,False,solo positivos
+train,5/069,2,1,1,134,a motorbike crosses the road,6,70,False,ambas clases
+train,5/071,3,1,2,250,a motorbike crosses the road,10,154,False,ambas clases
+train,5/072,3,1,2,238,a motorbike crosses the road,14,158,False,ambas clases
+train,5/073,3,2,1,113,a motorbike crosses the road,1,49,False,ambas clases
+train,5/074,2,1,1,103,a motorbike crosses the road,7,39,False,ambas clases
+train,5/076,1,1,0,90,a motorbike crosses the road,10,10,False,solo positivos
+train,5/077,3,2,1,164,a motorbike crosses the road,4,100,False,ambas clases
+train,5/080,3,1,2,238,a motorbike crosses the road,14,174,False,ambas clases
+train,5/082,3,2,1,130,a motorbike crosses the road,2,66,False,ambas clases
+train,5/083,2,1,1,160,a motorbike crosses the road,16,96,False,ambas clases
+train,5/085,3,1,2,455,a motorbike crosses the road,7,167,False,ambas clases
+train,5/087,3,2,1,113,a motorbike crosses the road,1,49,False,ambas clases
+train,5/091,3,2,1,162,a motorbike crosses the road,2,98,False,ambas clases
+train,5/092,3,2,1,146,a motorbike crosses the road,2,82,False,ambas clases
+train,5/093,3,2,1,116,a motorbike crosses the road,4,52,False,ambas clases
+train,5/094,3,1,2,326,a motorbike crosses the road,6,118,False,ambas clases
+train,5/096,2,1,1,120,a motorbike crosses the road,8,56,False,ambas clases
+train,5/098,3,1,2,296,a motorbike crosses the road,8,152,False,ambas clases
+train,5/100,4,2,2,274,a motorbike crosses the road,2,130,False,ambas clases
+train,5/101,2,1,1,150,a motorbike crosses the road,6,86,False,ambas clases
+train,5/102,1,1,0,93,a motorbike crosses the road,13,13,False,solo positivos
+train,5/103,3,1,2,184,a motorbike crosses the road,8,120,False,ambas clases
+train,5/104,3,1,2,215,a motorbike crosses the road,7,119,False,ambas clases
+train,5/105,2,1,1,134,a motorbike crosses the road,6,70,False,ambas clases
+train,5/108,2,1,1,166,a motorbike crosses the road,6,102,False,ambas clases
+train,5/110,2,1,1,127,a motorbike crosses the road,15,63,False,ambas clases
+train,5/111,4,2,2,210,a motorbike crosses the road,2,146,False,ambas clases
+train,5/112,4,2,2,195,a motorbike crosses the road,3,131,False,ambas clases
+train,5/114,3,1,2,253,a motorbike crosses the road,13,173,False,ambas clases
+train,5/115,3,1,2,187,a motorbike crosses the road,11,123,False,ambas clases
+train,5/116,2,1,1,158,a motorbike crosses the road,14,94,False,ambas clases
+train,5/117,2,1,1,157,a motorbike crosses the road,13,93,False,ambas clases
+train,5/118,3,2,1,130,a motorbike crosses the road,2,66,False,ambas clases
+train,5/120,3,1,2,208,a motorbike crosses the road,16,128,False,ambas clases
+train,5/122,3,1,2,285,a motorbike crosses the road,13,173,False,ambas clases
+train,5/123,2,1,1,123,a motorbike crosses the road,11,59,False,ambas clases
+train,5/124,3,1,2,264,a motorbike crosses the road,8,136,False,ambas clases
+train,5/125,3,1,2,309,a motorbike crosses the road,5,165,False,ambas clases
+train,5/126,2,1,1,150,a motorbike crosses the road,6,86,False,ambas clases
+train,5/127,2,1,1,168,a motorbike crosses the road,8,104,False,ambas clases
+train,5/128,3,2,1,177,a motorbike crosses the road,1,113,False,ambas clases
+train,5/129,4,2,2,212,a motorbike crosses the road,4,132,False,ambas clases
+train,5/131,3,1,2,310,a motorbike crosses the road,6,150,False,ambas clases
+train,5/132,3,1,2,220,a motorbike crosses the road,12,156,False,ambas clases
+train,5/133,2,1,1,135,a motorbike crosses the road,7,71,False,ambas clases
+train,5/134,3,1,2,217,a motorbike crosses the road,9,137,False,ambas clases
+train,5/135,2,1,1,135,a motorbike crosses the road,7,71,False,ambas clases
+train,5/136,4,2,2,242,a motorbike crosses the road,2,178,False,ambas clases
+train,5/138,3,2,1,130,a motorbike crosses the road,2,66,False,ambas clases
+train,5/140,2,1,1,150,a motorbike crosses the road,6,86,False,ambas clases
+train,5/141,3,2,1,164,a motorbike crosses the road,4,100,False,ambas clases
+train,5/143,3,1,2,416,a motorbike crosses the road,16,160,False,ambas clases
+train,5/144,3,1,2,296,a motorbike crosses the road,8,168,False,ambas clases
+train,5/145,4,2,2,323,a motorbike crosses the road,3,179,False,ambas clases
+train,5/146,3,1,2,316,ego-car  turns right across path at non-signalized junctions,12,172,False,ambas clases
+train,5/147,3,1,2,304,a motorbike crosses the road,16,144,False,ambas clases
+train,5/150,2,1,1,152,a motorbike crosses the road,8,88,False,ambas clases
+train,5/152,3,1,2,208,a motorbike crosses the road,16,128,False,ambas clases
+train,5/153,3,1,2,200,a motorbike crosses the road,8,136,False,ambas clases
+train,5/154,1,1,0,92,a motorbike crosses the road,12,12,False,solo positivos
+train,5/156,3,2,1,113,a motorbike crosses the road,1,49,False,ambas clases
+train,50/005,2,1,1,150,a motorbike crosses the road,6,86,False,ambas clases
+train,50/006,3,1,2,265,a vehicle turns left across path at non-signalized junctions,9,169,False,ambas clases
+train,50/008,3,1,2,430,a motorbike crosses the road,14,158,False,ambas clases
+train,50/009,2,1,1,125,a motorbike retrogrades,13,61,False,ambas clases
+train,50/010,3,1,2,272,a vehicle turns on a road with the opposite direction to ego-car/another vehicle,16,176,False,ambas clases
+train,50/011,2,1,1,96,a motorbike crosses the road,16,32,False,ambas clases
+train,50/015,3,2,1,130,a motorbike crosses the road,2,66,False,ambas clases
+train,50/016,2,1,1,152,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,88,False,ambas clases
+train,50/017,2,1,1,128,a motorbike crosses the road,16,64,False,ambas clases
+train,50/019,1,1,0,93,a motorbike crosses the road,13,13,False,solo positivos
+train,50/020,3,1,2,282,a vehicle turns left across path at non-signalized junctions,10,122,False,ambas clases
+train,50/022,3,2,1,162,lead vehicle stops,2,98,False,ambas clases
+train,50/024,2,1,1,136,a motorbike crosses the road,8,72,False,ambas clases
+train,50/025,3,1,2,344,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,152,False,ambas clases
+train,50/028,1,1,0,94,a motorbike crosses the road,14,14,False,solo positivos
+train,50/031,3,1,2,184,a vehicle goes straight crossing paths at non-signalized junctions,8,120,False,ambas clases
+train,50/037,3,1,2,188,a vehicle turns right across path at signalized junctions,12,124,False,ambas clases
+train,50/041,2,1,1,108,lead vehicle stops,12,44,False,ambas clases
+train,50/046,2,1,1,150,a motorbike turns right across path at non-signalized junctions,6,86,False,ambas clases
+train,50/047,3,1,2,190,a motorbike crosses the road,14,126,False,ambas clases
+train,50/049,2,1,1,140,a motorbike crosses the road,12,76,False,ambas clases
+train,50/050,4,2,2,212,a vehicle turns left across path at non-signalized junctions,4,148,False,ambas clases
+train,50/054,3,1,2,224,a vehicle crosses the road,16,160,False,ambas clases
+train,50/056,3,1,2,220,a motorbike crosses the road,12,156,False,ambas clases
+train,50/057,3,2,1,115,a motorbike changes lines into motorway,3,51,False,ambas clases
+train,50/064,3,2,1,115,a vehicle changes lanes with the same direction to ego-car/another vehicle,3,51,False,ambas clases
+train,50/067,3,2,1,178,a vehicle turns left across path at signalized junctions,2,114,False,ambas clases
+train,50/069,2,1,1,106,a motorbike runs red light,10,42,False,ambas clases
+train,50/072,3,2,1,145,a vehicle is out of control,1,81,False,ambas clases
+train,50/076,3,2,1,180,a motorbike changes lines into motorway,4,116,False,ambas clases
+train,50/085,1,1,0,93,a vehicle changes lanes with the same direction to ego-car/another vehicle,13,13,False,solo positivos
+train,50/086,3,1,2,202,a motorbike crosses the road,10,122,False,ambas clases
+train,50/090,2,1,1,128,a vehicle goes straight crossing paths at non-signalized junctions,16,64,False,ambas clases
+train,50/091,2,1,1,152,a motorbike crosses the road,8,88,False,ambas clases
+train,50/093,2,1,1,137,a vehicle changes lanes with the same direction to ego-car/another vehicle,9,73,False,ambas clases
+train,50/096,1,1,0,94,a motorbike crosses the road,14,14,False,solo positivos
+train,50/097,3,2,1,178,a motorbike changes lines into motorway,2,114,False,ambas clases
+train,50/098,3,2,1,180,a vehicle changes lanes with the same direction to ego-car/another vehicle,4,116,False,ambas clases
+train,50/101,3,1,2,200,a motorbike crosses the road,8,120,False,ambas clases
+train,50/102,2,1,1,152,a motorbike runs red light,8,88,False,ambas clases
+train,50/104,2,1,1,152,a vehicle turns on a road with the opposite direction to ego-car/another vehicle,8,88,False,ambas clases
+train,50/105,3,2,1,116,lead vehicle decelerates,4,52,False,ambas clases
+train,50/109,2,1,1,124,a vehicle turns left across path at non-signalized junctions,12,60,False,ambas clases
+train,50/110,2,1,1,95,a motorbike runs red light,15,31,False,ambas clases
+train,50/111,2,1,1,172,a vehicle turns left across path at signalized junctions,12,108,False,ambas clases
+train,50/112,2,1,1,176,a motorbike crosses the road,16,112,False,ambas clases
+train,50/113,3,1,2,186,a vehicle turns on a road with the opposite direction to ego-car/another vehicle,10,122,False,ambas clases
+train,50/117,4,2,2,225,a motorbike crosses the road,1,161,False,ambas clases
+train,50/118,3,2,1,100,a vehicle turns left across path at non-signalized junctions,4,36,False,ambas clases
+train,50/121,3,1,2,213,a vehicle changes lanes with the same direction to ego-car/another vehicle,5,149,False,ambas clases
+train,50/128,3,1,2,288,a vehicle turns left across path at non-signalized junctions,16,176,False,ambas clases
+train,50/137,4,2,2,260,a motorbike changes lines into motorway,4,164,False,ambas clases
+train,50/138,2,1,1,152,a vehicle turns right across path at signalized junctions,8,88,False,ambas clases
+train,50/140,3,1,2,286,a motorbike turns left across path at signalized junctions,14,126,False,ambas clases
+train,50/142,1,1,0,94,a vehicle runs red light,14,14,False,solo positivos
+train,50/143,4,2,2,274,a motorbike runs red light,2,178,False,ambas clases
+train,50/146,2,1,1,150,a vehicle runs red light,6,86,False,ambas clases
+train,50/149,1,1,0,90,a vehicle turns right across path at non-signalized junctions,10,10,False,solo positivos
+train,50/151,2,1,1,122,a motorbike crosses the road,10,58,False,ambas clases
+train,50/153,3,1,2,190,a motorbike runs red light,14,126,False,ambas clases
+train,50/154,3,2,1,177,a motorbike runs red light,1,113,False,ambas clases
+train,50/157,3,1,2,270,a vehicle turns left across path at non-signalized junctions,14,158,False,ambas clases
+train,50/161,3,1,2,224,a motorbike crosses the road,16,160,False,ambas clases
+train,50/164,3,1,2,299,a motorbike crosses the road,11,155,False,ambas clases
+train,50/167,2,1,1,128,a motorbike changes lines into motorway,16,64,False,ambas clases
+train,50/171,2,1,1,143,a motorbike crosses the road,15,79,False,ambas clases
+train,50/173,2,1,1,159,a motorbike changes lines into motorway,15,95,False,ambas clases
+train,50/176,2,1,1,144,a motorbike crosses the road,16,80,False,ambas clases
+train,50/178,4,2,2,290,a vehicle turns right across path at signalized junctions,2,162,False,ambas clases
+train,50/179,3,2,1,147,a vehicle runs red light,3,83,False,ambas clases
+train,50/183,4,2,2,212,a vehicle turns right across path at signalized junctions,4,132,False,ambas clases
+train,50/186,2,1,1,137,a motorbike crosses the road,9,73,False,ambas clases
+train,50/190,3,1,2,215,a vehicle turns left across path at signalized junctions,7,119,False,ambas clases
+train,50/192,2,1,1,126,a motorbike is out of control,14,62,False,ambas clases
+train,50/194,4,2,2,210,a vehicle changes lanes with the same direction to ego-car/another vehicle,2,146,False,ambas clases
+train,50/195,2,1,1,139,a motorbike retrogrades,11,75,False,ambas clases
+train,50/196,3,1,2,197,a vehicle backes up into another vehicle,5,117,False,ambas clases
+train,50/197,4,2,2,212,a motorbike runs red light,4,132,False,ambas clases
+train,51/001,3,1,2,214,there is an object crash,6,118,False,ambas clases
+train,51/002,3,1,2,285,a motorbike changes lines into motorway,13,173,False,ambas clases
+train,51/003,2,1,1,155,a motorbike changes lines into motorway,11,91,False,ambas clases
+train,51/004,2,1,1,155,a motorbike crosses the road,11,91,False,ambas clases
+train,51/007,3,1,2,378,a vehicle backes up into another vehicle,10,138,False,ambas clases
+train,51/008,3,1,2,278,there is an object crash,6,134,False,ambas clases
+train,51/013,3,2,1,114,a motorbike changes lines into motorway,2,50,False,ambas clases
+train,51/014,2,1,1,141,a motorbike changes lines into motorway,13,77,False,ambas clases
+train,51/016,2,1,1,149,a motorbike changes lines into motorway,5,85,False,ambas clases
+train,51/018,2,1,1,141,a motorbike changes lines into motorway,13,77,False,ambas clases
+train,52/003,3,1,2,230,a pedestrian crosses the road,6,166,False,ambas clases
+train,52/005,2,1,1,102,a pedestrian crosses the road,6,38,False,ambas clases
+train,52/006,3,1,2,190,a pedestrian crosses the road,14,126,False,ambas clases
+train,52/009,3,2,1,147,a pedestrian crosses the road,3,83,False,ambas clases
+train,53/001,3,2,1,146,lead motorcycle stops,2,82,False,ambas clases
+train,53/002,1,1,0,90,a cyclist crosses the road,10,10,False,solo positivos
+train,53/010,3,1,2,224,a cyclist changes lines into motorway,16,160,False,ambas clases
+train,53/011,3,1,2,199,a cyclist crosses the road,7,135,False,ambas clases
+train,54/002,2,0,2,0,a pedestrian crosses the road,-384,-192,True,solo negativos
+train,54/003,3,2,1,114,a vehicle accelerates to turn on a road,2,50,False,ambas clases
+train,55/001,3,1,2,220,a vehicle turns right across path at non-signalized junctions,12,140,False,ambas clases
+train,55/002,2,1,1,107,lead vehicle stops,11,43,False,ambas clases
+train,56/001,3,2,1,100,a pedestrian crosses the road,4,36,False,ambas clases
+train,56/004,3,2,1,97,a pedestrian crosses the road,1,33,False,ambas clases
+train,56/005,3,1,2,238,a vehicle changes lanes with the same direction to ego-car/another vehicle,14,158,False,ambas clases
+train,56/006,3,2,1,132,a pedestrian crosses the road,4,68,False,ambas clases
+train,56/007,3,2,1,99,a pedestrian crosses the road,3,35,False,ambas clases
+train,56/008,3,1,2,240,a vehicle is out of control,16,160,False,ambas clases
+train,56/012,3,1,2,217,a vehicle turns left across path at signalized junctions,9,121,False,ambas clases
+train,56/018,3,2,1,97,a vehicle turns right across path at signalized junctions,1,33,False,ambas clases
+train,56/019,2,1,1,171,a pedestrian crosses the road,11,107,False,ambas clases
+train,56/020,2,1,1,142,a vehicle is out of control,14,78,False,ambas clases
+train,56/023,2,1,1,110,a pedestrian crosses the road,14,46,False,ambas clases
+train,56/025,2,1,1,125,a pedestrian crosses the road,13,61,False,ambas clases
+train,56/026,3,2,1,130,a pedestrian crosses the road,2,66,False,ambas clases
+train,56/032,3,1,2,336,a pedestrian crosses the road,16,144,False,ambas clases
+train,56/033,4,2,2,307,a pedestrian crosses the road,3,163,False,ambas clases
+train,56/034,3,2,1,145,a vehicle turns left across path at signalized junctions,1,81,False,ambas clases
+train,57/004,3,1,2,285,a cyclist crosses the road,13,157,False,ambas clases
+train,57/006,3,1,2,263,a cyclist changes lines into motorway,7,167,False,ambas clases
+train,57/008,3,1,2,182,a vehicle turns right across path at signalized junctions,6,118,False,ambas clases
+train,57/012,2,1,1,157,a cyclist runs red light,13,93,False,ambas clases
+train,57/020,2,1,1,122,a cyclist runs red light,10,58,False,ambas clases
+train,57/021,3,1,2,234,a cyclist changes lines into motorway,10,154,False,ambas clases
+train,57/022,3,1,2,215,a vehicle backes up into another vehicle,7,135,False,ambas clases
+train,57/026,2,1,1,126,a cyclist runs red light,14,62,False,ambas clases
+train,57/027,2,1,1,144,a cyclist runs red light,16,80,False,ambas clases
+train,57/029,2,1,1,165,a vehicle crosses the road,5,101,False,ambas clases
+train,57/030,2,1,1,173,a cyclist crosses the road,13,109,False,ambas clases
+train,57/031,2,1,1,155,a vehicle turns left across path at signalized junctions,11,91,False,ambas clases
+train,57/032,2,1,1,170,a cyclist changes lines into motorway,10,106,False,ambas clases
+train,57/033,3,1,2,365,a cyclist crosses the road,13,141,False,ambas clases
+train,57/035,3,2,1,145,a vehicle  goes straight at signalized junctions,1,81,False,ambas clases
+train,57/036,3,2,1,132,a vehicle runs red light,4,68,False,ambas clases
+train,57/037,3,1,2,271,a cyclist crosses the road,15,175,False,ambas clases
+train,57/041,2,1,1,127,a cyclist runs red light,15,63,False,ambas clases
+train,57/043,2,1,1,168,a cyclist crosses the road,8,104,False,ambas clases
+train,57/044,4,2,2,196,a cyclist crosses the road,4,132,False,ambas clases
+train,57/045,3,1,2,318,a cyclist runs red light,14,142,False,ambas clases
+train,58/003,3,2,1,132,there is an object crash,4,68,False,ambas clases
+train,58/004,3,2,1,97,there is an object crash,1,33,False,ambas clases
+train,59/002,2,1,1,138,there is an object crash,10,74,False,ambas clases
+train,59/004,3,1,2,470,a cyclist is out of control,6,166,False,ambas clases
+train,59/009,3,1,2,473,a cyclist is out of control,9,153,False,ambas clases
+train,59/011,4,2,2,225,a cyclist is out of control,1,161,False,ambas clases
+train,59/012,1,1,0,93,a cyclist is out of control,13,13,False,solo positivos
+train,59/015,2,1,1,158,a cyclist is out of control,14,94,False,ambas clases
+train,59/017,3,2,1,146,a cyclist is out of control,2,82,False,ambas clases
+train,6/001,3,1,2,202,ego-car changes lanes,10,122,False,ambas clases
+train,6/002,2,1,1,160,ego-car drives away from the road edge,16,96,False,ambas clases
+train,6/003,3,1,2,230,ego-car drives away from the road edge,6,134,False,ambas clases
+train,6/005,4,2,2,243,ego-car turns left across path at non-signalized junctions,3,131,False,ambas clases
+train,6/006,3,1,2,441,ego-car turns left across path at non-signalized junctions,9,169,False,ambas clases
+train,6/007,2,1,1,124,ego-car drives away from the road edge,12,60,False,ambas clases
+train,6/008,3,2,1,130,a motorbike turns left across path at non-signalized junctions,2,66,False,ambas clases
+train,6/009,3,2,1,180,a motorbike turns left across path at non-signalized junctions,4,116,False,ambas clases
+train,6/010,3,1,2,421,ego-car  turns right across path at non-signalized junctions,5,149,False,ambas clases
+train,6/012,3,1,2,246,lead vehicle stops,6,118,False,ambas clases
+train,6/013,3,1,2,272,a motorbike is out of control,16,144,False,ambas clases
+train,6/014,3,2,1,179,ego-car turns left across path at signalized junctions,3,115,False,ambas clases
+train,6/015,4,2,2,257,ego-car  turns right across path at non-signalized junctions,1,161,False,ambas clases
+train,6/016,3,1,2,335,a motorbike is out of control,15,127,False,ambas clases
+train,6/017,2,1,1,123,ego-car drives away from the road edge,11,59,False,ambas clases
+train,6/018,3,2,1,180,ego-car drives away from the road edge,4,116,False,ambas clases
+train,6/020,4,2,2,290,ego-car goes straight at signalized junctions,2,162,False,ambas clases
+train,6/025,3,2,1,180,a motorbike is out of control,4,116,False,ambas clases
+train,6/026,3,1,2,203,lead motorcycle stops,11,139,False,ambas clases
+train,6/028,3,1,2,446,lead motorcycle stops,14,174,False,ambas clases
+train,6/029,4,2,2,195,ego-car  turns right across path at non-signalized junctions,3,131,False,ambas clases
+train,6/031,4,2,2,290,ego-car changes lanes,2,162,False,ambas clases
+train,6/034,3,1,2,398,ego-car turns left across path at signalized junctions,14,158,False,ambas clases
+train,6/035,4,2,2,227,ego-car goes straight crossing paths at non-signalized junctions,3,131,False,ambas clases
+train,6/036,3,1,2,310,ego-car turns left across path at non-signalized junctions,6,166,False,ambas clases
+train,6/037,3,1,2,182,lead motorcycle stops,6,118,False,ambas clases
+train,6/039,3,1,2,222,ego-car turns left across path at non-signalized junctions,14,158,False,ambas clases
+train,6/041,3,1,2,215,ego-car turns right across path at signalized junctions,7,135,False,ambas clases
+train,6/043,3,1,2,236,ego-car dodges the motorbike,12,172,False,ambas clases
+train,6/044,2,1,1,118,ego-car goes straight crossing paths at non-signalized junctions,6,54,False,ambas clases
+train,6/045,1,1,0,94,ego-car turns left across path at non-signalized junctions,14,14,False,solo positivos
+train,6/046,3,2,1,178,ego-car dodges the motorbike,2,114,False,ambas clases
+train,6/047,3,1,2,284,ego-car dodges the motorbike,12,140,False,ambas clases
+train,6/048,3,2,1,180,a motorbike is out of control,4,116,False,ambas clases
+train,6/049,2,1,1,170,a motorbike is out of control,10,106,False,ambas clases
+train,6/050,4,2,2,353,a motorbike turns left across path at signalized junctions,1,177,False,ambas clases
+train,6/051,2,1,1,142,ego-car  turns right across path at non-signalized junctions,14,78,False,ambas clases
+train,6/052,3,1,2,188,a motorbike turns left across path at non-signalized junctions,12,124,False,ambas clases
+train,6/053,3,2,1,132,ego-car  turns right across path at non-signalized junctions,4,68,False,ambas clases
+train,6/056,2,1,1,127,a motorbike is out of control,15,63,False,ambas clases
+train,6/057,4,2,2,194,a motorbike dodges the vehicle,2,130,False,ambas clases
+train,6/060,3,1,2,410,a motorbike is out of control,10,154,False,ambas clases
+train,6/061,3,1,2,182,ego-car goes straight crossing paths at non-signalized junctions,6,118,False,ambas clases
+train,6/063,2,1,1,139,ego-car  turns right across path at non-signalized junctions,11,75,False,ambas clases
+train,6/064,1,1,0,94,ego-car turns left across path at non-signalized junctions,14,14,False,solo positivos
+train,6/065,2,1,1,95,ego-car changes lanes,15,31,False,ambas clases
+train,6/066,4,2,2,260,ego-car  turns right across path at non-signalized junctions,4,180,False,ambas clases
+train,6/067,3,1,2,233,a motorbike is out of control,9,153,False,ambas clases
+train,6/069,2,1,1,142,ego-car is out of control,14,78,False,ambas clases
+train,6/070,2,1,1,137,a motorbike dodges the vehicle,9,73,False,ambas clases
+train,6/071,3,1,2,430,a motorbike dodges the vehicle,14,174,False,ambas clases
+train,6/072,2,1,1,150,ego-car turns left across path at non-signalized junctions,6,86,False,ambas clases
+train,6/073,2,1,1,102,ego-car turns left across path at non-signalized junctions,6,38,False,ambas clases
+train,6/075,3,2,1,148,ego-car turns right across path at signalized junctions,4,84,False,ambas clases
+train,6/076,3,1,2,460,a motorbike is out of control,12,172,False,ambas clases
+train,6/077,2,1,1,165,ego-car turns right across path at signalized junctions,5,101,False,ambas clases
+train,6/080,2,1,1,154,ego-car turns left across path at non-signalized junctions,10,90,False,ambas clases
+train,6/082,4,2,2,193,ego-car  turns right across path at non-signalized junctions,1,129,False,ambas clases
+train,6/083,3,1,2,198,ego-car changes lanes,6,134,False,ambas clases
+train,6/084,2,1,1,123,lead motorcycle stops,11,59,False,ambas clases
+train,6/085,2,1,1,133,ego-car turns left across path at non-signalized junctions,5,69,False,ambas clases
+train,6/086,3,2,1,97,ego-car turns left across path at signalized junctions,1,33,False,ambas clases
+train,6/087,4,2,2,210,ego-car turns left across path at non-signalized junctions,2,146,False,ambas clases
+train,6/089,2,1,1,118,a motorbike turns left across path at non-signalized junctions,6,54,False,ambas clases
+train,6/091,4,2,2,193,lead motorcycle stops,1,129,False,ambas clases
+train,6/092,4,2,2,338,ego-car turns left across path at non-signalized junctions,2,162,False,ambas clases
+train,6/094,2,1,1,173,a motorbike is out of control,13,109,False,ambas clases
+train,6/095,3,2,1,100,a motorbike turns left across path at non-signalized junctions,4,36,False,ambas clases
+train,6/098,2,1,1,105,a motorbike is out of control,9,41,False,ambas clases
+train,6/101,3,1,2,224,a motorbike is out of control,16,160,False,ambas clases
+train,6/102,3,2,1,114,a motorbike is out of control,2,50,False,ambas clases
+train,6/103,3,1,2,248,ego-car  turns right across path at non-signalized junctions,8,136,False,ambas clases
+train,6/104,3,2,1,180,lead vehicle decelerates,4,116,False,ambas clases
+train,6/105,2,1,1,142,ego-car turns left across path at non-signalized junctions,14,78,False,ambas clases
+train,6/106,3,1,2,206,a motorbike is out of control,14,126,False,ambas clases
+train,6/107,2,1,1,170,ego-car  turns right across path at non-signalized junctions,10,106,False,ambas clases
+train,6/108,3,1,2,236,ego-car  turns right across path at non-signalized junctions,12,156,False,ambas clases
+train,6/109,2,1,1,159,a motorbike is out of control,15,95,False,ambas clases
+train,6/110,3,1,2,200,a motorbike is out of control,8,136,False,ambas clases
+train,6/111,3,1,2,375,a motorbike is out of control,7,135,False,ambas clases
+train,6/112,3,1,2,345,a motorbike is out of control,9,169,False,ambas clases
+train,6/113,2,1,1,95,a motorbike turns left across path at non-signalized junctions,15,31,False,ambas clases
+train,6/114,3,1,2,285,a motorbike is out of control,13,173,False,ambas clases
+train,6/115,3,1,2,303,a motorbike is out of control,15,175,False,ambas clases
+train,6/116,1,1,0,92,a motorbike is out of control,12,12,False,solo positivos
+train,6/118,3,1,2,205,a motorbike is out of control,13,125,False,ambas clases
+train,6/119,2,1,1,118,a motorbike is out of control,6,54,False,ambas clases
+train,60/003,3,1,2,378,a cyclist changes lines into motorway,10,154,False,ambas clases
+train,61/001,2,1,1,150,ego-car is out of control,6,86,False,ambas clases
+train,61/002,3,1,2,270,ego-car is out of control,14,174,False,ambas clases
+train,61/003,3,1,2,288,ego-car is out of control,16,160,False,ambas clases
+train,61/004,4,2,2,211,ego-car is out of control,3,147,False,ambas clases
+train,61/006,3,1,2,250,ego-car is out of control,10,138,False,ambas clases
+train,61/007,3,1,2,222,ego-car is out of control,14,126,False,ambas clases
+train,61/008,4,2,2,338,ego-car is out of control,2,178,False,ambas clases
+train,61/009,2,1,1,111,ego-car is out of control,15,47,False,ambas clases
+train,61/010,3,1,2,197,ego-car is out of control,5,117,False,ambas clases
+train,61/011,1,1,0,93,ego-car is out of control,13,13,False,solo positivos
+train,61/017,2,1,1,138,ego-car is out of control,10,74,False,ambas clases
+train,61/018,2,1,1,123,ego-car is out of control,11,59,False,ambas clases
+train,7/001,4,2,2,340,ego-car goes straight crossing paths at non-signalized junctions,4,164,False,ambas clases
+train,7/004,3,1,2,230,a vehicle turns right across path at non-signalized junctions,6,134,False,ambas clases
+train,7/005,3,1,2,185,a vehicle crosses the road,9,121,False,ambas clases
+train,7/006,3,1,2,430,a vehicle crosses the road,14,158,False,ambas clases
+train,7/007,4,2,2,226,a vehicle crosses the road,2,162,False,ambas clases
+train,7/008,3,1,2,198,a vehicle goes straight crossing paths at non-signalized junctions,6,118,False,ambas clases
+train,7/010,3,2,1,132,a vehicle goes straight crossing paths at non-signalized junctions,4,68,False,ambas clases
+train,7/012,3,2,1,99,a vehicle crosses the road,3,35,False,ambas clases
+train,8/001,3,2,1,162,ego-car  turns right across path at non-signalized junctions,2,98,False,ambas clases
+train,8/002,2,1,1,106,a vehicle is out of control,10,42,False,ambas clases
+train,8/003,3,1,2,394,ego-car drives away from the road edge,10,170,False,ambas clases
+train,8/004,3,1,2,186,vehicles  meet on the road,10,122,False,ambas clases
+train,8/005,4,2,2,228,ego-car goes straight crossing paths at non-signalized junctions,4,164,False,ambas clases
+train,8/006,2,1,1,156,a vehicle backes up into another vehicle,12,92,False,ambas clases
+train,8/007,3,1,2,220,lead vehicle stops,12,156,False,ambas clases
+train,8/009,4,2,2,258,a vehicle backes up into another vehicle,2,178,False,ambas clases
+train,8/011,2,1,1,110,a vehicle is out of control,14,46,False,ambas clases
+train,8/013,3,1,2,214,lead vehicle stops,6,150,False,ambas clases
+train,8/014,3,1,2,440,ego-car drives slowly on congested road,8,152,False,ambas clases
+train,8/015,2,1,1,118,a vehicle is out of control,6,54,False,ambas clases
+train,8/016,2,1,1,96,ego-car turns left across path at non-signalized junctions,16,32,False,ambas clases
+train,8/017,2,1,1,153,a vehicle changes lanes with the same direction to ego-car/another vehicle,9,89,False,ambas clases
+train,8/018,2,1,1,120,a vehicle turns left across path at non-signalized junctions,8,56,False,ambas clases
+train,8/019,3,2,1,148,lead vehicle stops,4,84,False,ambas clases
+train,8/020,3,1,2,207,a vehicle backes up into another vehicle,15,143,False,ambas clases
+train,8/021,2,1,1,110,ego-car turns left across path at non-signalized junctions,14,46,False,ambas clases
+train,8/023,3,2,1,179,ego-car turns left across path at signalized junctions,3,115,False,ambas clases
+train,8/024,3,1,2,182,a vehicle changes lanes with the same direction to ego-car/another vehicle,6,118,False,ambas clases
+train,8/025,2,1,1,158,lead vehicle decelerates,14,94,False,ambas clases
+train,8/028,2,0,2,0,lead vehicle stops,-384,-320,True,solo negativos
+train,8/029,3,1,2,202,lead vehicle stops,10,138,False,ambas clases
+train,8/030,4,2,2,674,a vehicle changes lanes with the same direction to ego-car/another vehicle,2,130,False,ambas clases
+train,8/031,3,1,2,205,a vehicle turns right across path at non-signalized junctions,13,141,False,ambas clases
+train,8/032,3,1,2,285,a vehicle changes lanes with the same direction to ego-car/another vehicle,13,173,False,ambas clases
+train,8/036,2,1,1,122,a vehicle turns left across path at signalized junctions,10,58,False,ambas clases
+train,8/037,3,1,2,345,a vehicle is out of control,9,137,False,ambas clases
+train,8/038,3,1,2,582,a vehicle backes up into another vehicle,6,134,False,ambas clases
+train,8/040,2,0,2,0,a vehicle changes lanes with the same direction to ego-car/another vehicle,-256,-64,True,solo negativos
+train,8/041,3,2,1,163,a vehicle overtakes,3,99,False,ambas clases
+train,8/042,3,2,1,148,a following vehicle makes a maneuver,4,84,False,ambas clases
+train,8/044,2,1,1,166,ego-car turns left across path at non-signalized junctions,6,102,False,ambas clases
+train,8/045,3,1,2,262,lead vehicle stops,6,150,False,ambas clases
+train,8/046,2,1,1,176,a vehicle overtakes,16,112,False,ambas clases
+train,8/048,3,2,1,147,a vehicle is out of control,3,83,False,ambas clases
+train,8/052,2,1,1,140,a following vehicle makes a maneuver,12,76,False,ambas clases
+train,8/053,3,1,2,222,a vehicle changes lanes with the same direction to ego-car/another vehicle,14,158,False,ambas clases
+train,8/054,3,2,1,178,a vehicle overtakes,2,114,False,ambas clases
+train,8/055,3,1,2,400,ego-car changes lanes,16,160,False,ambas clases
+train,8/056,3,1,2,202,a vehicle changes lanes with the same direction to ego-car/another vehicle,10,122,False,ambas clases
+train,8/057,3,1,2,458,a vehicle overtakes,10,122,False,ambas clases
+train,9/001,2,1,1,123,a vehicle overtakes,11,59,False,ambas clases
+train,9/002,3,2,1,145,a vehicle overtakes,1,81,False,ambas clases
+train,9/006,3,1,2,190,a vehicle overtakes,14,126,False,ambas clases
+train,9/007,3,1,2,295,a vehicle overtakes,7,135,False,ambas clases
+train,9/012,4,2,2,308,a vehicle overtakes,4,164,False,ambas clases
+train,9/014,3,2,1,100,a vehicle overtakes,4,36,False,ambas clases
+train,9/015,3,1,2,265,a vehicle overtakes,9,137,False,ambas clases
+train,9/016,2,1,1,140,a vehicle overtakes,12,76,False,ambas clases
+train,9/017,4,2,2,292,a vehicle overtakes,4,180,False,ambas clases
+train,9/018,3,1,2,218,a vehicle overtakes,10,154,False,ambas clases
+train,9/019,2,1,1,122,a vehicle overtakes,10,58,False,ambas clases
+train,9/020,3,1,2,220,a vehicle overtakes,12,140,False,ambas clases
+val,1/005,4,2,2,260,a pedestrian crosses the road,4,148,False,ambas clases
+val,1/007,4,2,2,196,ego-car goes straight in the blind spot area,4,132,False,ambas clases
+val,1/010,3,1,2,472,a pedestrian crosses the road,8,168,False,ambas clases
+val,1/011,2,0,2,0,a pedestrian crosses the road,-384,-64,True,solo negativos
+val,1/013,3,1,2,269,ego-car accelerately goes straight at non-signalized junctions,13,173,False,ambas clases
+val,1/014,3,1,2,190,ego-car goes straight in the blind spot area,14,126,False,ambas clases
+val,1/023,4,2,2,260,a pedestrian crosses the road,4,148,False,ambas clases
+val,1/024,3,1,2,234,a pedestrian crosses the road,10,138,False,ambas clases
+val,1/027,2,1,1,159,ego-car goes straight crossing paths at non-signalized junctions,15,95,False,ambas clases
+val,1/029,2,1,1,142,a pedestrian crosses the road,14,78,False,ambas clases
+val,1/049,3,2,1,98,a pedestrian crosses the road,2,34,False,ambas clases
+val,1/050,4,2,2,324,a pedestrian crosses the road,4,180,False,ambas clases
+val,10/008,3,1,2,215,ego-car accelerately goes straight at non-signalized junctions,7,151,False,ambas clases
+val,10/011,4,2,2,228,ego-car turns left across path at non-signalized junctions,4,164,False,ambas clases
+val,10/016,3,1,2,408,vehicles meet on the road,8,152,False,ambas clases
+val,10/017,3,1,2,248,a vehicle turns on a road with the same direction to ego-car,8,152,False,ambas clases
+val,10/020,4,2,2,225,ego-car goes straight crossing paths at non-signalized junctions,1,161,False,ambas clases
+val,10/021,2,1,1,136,a vehicle crosses the road,8,72,False,ambas clases
+val,10/024,3,1,2,186,ego-car turns on a road,10,122,False,ambas clases
+val,10/026,3,1,2,267,ego-car turns left across path at non-signalized junctions,11,155,False,ambas clases
+val,10/027,3,1,2,285,ego-car turns left across path at non-signalized junctions,13,157,False,ambas clases
+val,10/040,3,1,2,208,ego-car turns right across path at non-signalized junctions,16,128,False,ambas clases
+val,10/043,3,2,1,148,ego-car turns left across path at non-signalized junctions,4,84,False,ambas clases
+val,10/046,4,2,2,260,ego-car accelerately goes straight at non-signalized junctions,4,180,False,ambas clases
+val,10/049,2,1,1,123,a vehicle crosses the road,11,59,False,ambas clases
+val,10/051,4,2,2,306,a vehicle changes lanes - same direction,2,178,False,ambas clases
+val,10/053,3,1,2,332,a vehicle goes straight at signalized junctions,12,156,False,ambas clases
+val,10/056,3,1,2,278,a vehicle goes straight crossing paths at non-signalized junctions,6,134,False,ambas clases
+val,10/058,3,1,2,406,a vehicle goes straight crossing paths at non-signalized junctions,6,166,False,ambas clases
+val,10/063,3,1,2,208,a vehicle crosses the road,16,144,False,ambas clases
+val,10/067,3,1,2,218,ego-car turns right across path at signalized junctions,10,154,False,ambas clases
+val,10/105,3,1,2,268,a vehicle crosses the road,12,124,False,ambas clases
+val,10/107,2,1,1,143,a vehicle crosses the road,15,79,False,ambas clases
+val,10/118,3,2,1,114,a vehicle crosses the road,2,50,False,ambas clases
+val,10/126,2,1,1,167,a vehicle crosses the road,7,103,False,ambas clases
+val,10/128,3,1,2,217,a vehicle crosses the road,9,153,False,ambas clases
+val,10/137,3,1,2,198,a vehicle crosses the road,6,118,False,ambas clases
+val,10/139,3,1,2,239,a vehicle crosses the road,15,175,False,ambas clases
+val,10/156,3,1,2,188,a vehicle crosses the road,12,124,False,ambas clases
+val,11/009,2,1,1,122,lead vehicle stops,10,58,False,ambas clases
+val,11/010,4,2,2,274,a vehicle changes lanes with the same direction to ego-car,2,162,False,ambas clases
+val,11/014,4,2,2,273,ego-car goes straight at signalized junctions,1,145,False,ambas clases
+val,11/032,4,2,2,369,lead vehicle stops,1,129,False,ambas clases
+val,11/043,3,2,1,99,ego-car goes straight crossing paths at non-signalized junctions,3,35,False,ambas clases
+val,11/044,4,2,2,403,a vehicle changes lanes with the same direction to ego-car,3,179,False,ambas clases
+val,11/052,3,1,2,182,lead vehicle stops,6,118,False,ambas clases
+val,11/058,1,0,1,0,a vehicle changes lanes with the same direction to ego-car,-64,-64,True,solo negativos
+val,11/061,2,1,1,125,a vehicle turns on a road with the same direction to ego-car/another vehicle,13,61,False,ambas clases
+val,11/077,3,1,2,217,ego-car goes straight at non-signalized junctions,9,121,False,ambas clases
+val,11/087,3,2,1,116,vehicles meet on the road,4,52,False,ambas clases
+val,11/107,2,0,2,0,a vehicle changes lanes with the same direction to ego-car,-192,-128,True,solo negativos
+val,11/115,3,2,1,178,a vehicle turns on a road with the opposite direction to,2,114,False,ambas clases
+val,11/130,2,1,1,124,a vehicle turns left across path at non-signalized junctions,12,60,False,ambas clases
+val,11/155,4,2,2,210,lead vehicle decelerates,2,130,False,ambas clases
+val,11/196,3,1,2,270,a vehicle backes up into another vehicle,14,142,False,ambas clases
+val,11/201,3,1,2,202,lead vehicle stops,10,138,False,ambas clases
+val,11/209,3,1,2,248,ego-car  turns right across path at non-signalized junctions,8,152,False,ambas clases
+val,11/219,4,2,2,227,lead vehicle decelerates,3,131,False,ambas clases
+val,11/221,2,1,1,122,a following vehicle makes a maneuver,10,58,False,ambas clases
+val,11/230,2,1,1,141,lead vehicle stops,13,77,False,ambas clases
+val,11/243,3,1,2,360,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,136,False,ambas clases
+val,11/246,4,2,2,290,a vehicle changes lanes with the same direction to ego-car/another vehicle,2,178,False,ambas clases
+val,12/006,3,1,2,208,a vehicle changes lanes with the same direction to ego-car,16,144,False,ambas clases
+val,12/020,2,1,1,168,ego-car overtakes,8,104,False,ambas clases
+val,12/023,3,1,2,190,ego-car overtakes,14,126,False,ambas clases
+val,12/024,3,1,2,218,a vehicle overtakes,10,138,False,ambas clases
+val,12/026,3,1,2,279,a vehicle overtakes,7,135,False,ambas clases
+val,12/041,3,1,2,224,a vehicle changes lanes with the same direction to ego-car,16,160,False,ambas clases
+val,12/042,3,1,2,296,a vehicle changes lanes with the same direction to ego-car,8,168,False,ambas clases
+val,13/008,3,1,2,218,there is an object crash,10,122,False,ambas clases
+val,14/007,2,1,1,110,a vehicle changes lanes with the same direction to ego-car,14,46,False,ambas clases
+val,14/010,4,2,2,450,ego-car accelerates to turn on a road,2,162,False,ambas clases
+val,14/016,2,1,1,105,a vehicle turns left across path at non-signalized junctions,9,41,False,ambas clases
+val,17/001,3,1,2,197,there is an object crash,5,133,False,ambas clases
+val,18/002,3,1,2,352,ego-car controls loss,16,144,False,ambas clases
+val,18/003,3,1,2,181,there is an object crash,5,117,False,ambas clases
+val,18/010,2,1,1,140,there is an object crash,12,76,False,ambas clases
+val,2/002,1,1,0,90,ego-car drives slowly on congested road,10,10,False,solo positivos
+val,2/003,2,1,1,140,ego-car turns left across path at signalized junctions,12,76,False,ambas clases
+val,21/006,3,1,2,216,a vehicle backes up into another vehicle,8,120,False,ambas clases
+val,21/009,2,1,1,155,a vehicle is out of control,11,91,False,ambas clases
+val,24/003,3,1,2,316,a vehicle is out of control,12,156,False,ambas clases
+val,24/008,3,1,2,266,there is an object crash,10,170,False,ambas clases
+val,24/010,3,1,2,188,a vehicle changes lanes with the same direction to ego-car/another vehicle,12,124,False,ambas clases
+val,24/011,3,1,2,192,a vehicle is out of control,16,128,False,ambas clases
+val,24/014,2,1,1,142,a vehicle changes lanes with the same direction to ego-car/another vehicle,14,78,False,ambas clases
+val,24/016,4,2,2,194,a vehicle changes lanes with the same direction to ego-car/another vehicle,2,130,False,ambas clases
+val,3/005,3,1,2,240,a cyclist crosses the road,16,160,False,ambas clases
+val,3/017,3,1,2,200,a cyclist crosses the road,8,120,False,ambas clases
+val,36/001,3,1,2,312,there is an object crash,8,152,False,ambas clases
+val,37/002,3,1,2,200,a motorbike is out of control,8,136,False,ambas clases
+val,37/003,3,1,2,286,a motorbike is out of control,14,142,False,ambas clases
+val,37/007,1,1,0,90,a motorbike is out of control,10,10,False,solo positivos
+val,37/052,2,1,1,172,a motorbike is out of control,12,108,False,ambas clases
+val,37/062,3,2,1,115,a motorbike is out of control,3,51,False,ambas clases
+val,37/064,2,1,1,96,a motorbike is out of control,16,32,False,ambas clases
+val,37/068,2,1,1,160,a motorbike is out of control,16,96,False,ambas clases
+val,37/072,3,2,1,130,a motorbike is out of control,2,66,False,ambas clases
+val,37/073,4,2,2,212,a motorbike is out of control,4,148,False,ambas clases
+val,37/078,2,1,1,154,a motorbike is out of control,10,90,False,ambas clases
+val,38/002,2,1,1,118,a motorbike turns left across path at non-signalized junctions,6,54,False,ambas clases
+val,38/014,1,1,0,92,a motorbike crosses the road,12,12,False,solo positivos
+val,38/017,2,1,1,125,a motorbike crosses the road,13,61,False,ambas clases
+val,38/032,3,2,1,178,a motorbike is out of control,2,114,False,ambas clases
+val,38/037,1,1,0,94,a motorbike changes lines into motorway,14,14,False,solo positivos
+val,38/052,2,1,1,120,a motorbike changes lines into motorway,8,56,False,ambas clases
+val,38/054,3,2,1,100,a motorbike changes lines into motorway,4,36,False,ambas clases
+val,38/066,3,2,1,100,a motorbike crosses the road,4,36,False,ambas clases
+val,39/018,2,1,1,160,a vehicle is out of control,16,96,False,ambas clases
+val,39/021,2,1,1,102,a vehicle is out of control,6,38,False,ambas clases
+val,4/005,4,2,2,450,ego-car turns right across path at signalized junctions,2,178,False,ambas clases
+val,4/006,3,2,1,180,ego-car turns left across path at signalized junctions,4,116,False,ambas clases
+val,4/007,2,1,1,170,a cyclist changes lines into motorway,10,106,False,ambas clases
+val,4/012,3,1,2,253,ego-car turns left across path at non-signalized junctions,13,157,False,ambas clases
+val,4/013,3,1,2,330,ego-car turns left across path at non-signalized junctions,10,170,False,ambas clases
+val,40/001,2,1,1,106,a vehicle crosses the road,10,42,False,ambas clases
+val,40/005,2,1,1,104,a vehicle crosses the road,8,40,False,ambas clases
+val,40/008,3,1,2,288,lead vehicle stops,16,160,False,ambas clases
+val,40/009,3,1,2,264,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,168,False,ambas clases
+val,40/016,3,1,2,182,lead vehicle stops,6,118,False,ambas clases
+val,41/001,3,1,2,400,a vehicle makes a dodge action,16,144,False,ambas clases
+val,41/004,4,2,2,308,a vehicle is out of control,4,180,False,ambas clases
+val,41/006,3,1,2,224,a vehicle is out of control,16,160,False,ambas clases
+val,41/014,3,1,2,186,a vehicle is out of control,10,122,False,ambas clases
+val,42/005,1,1,0,94,a vehicle is out of control,14,14,False,solo positivos
+val,42/023,2,1,1,95,a vehicle is out of control,15,31,False,ambas clases
+val,43/008,4,2,2,195,a vehicle turns left across path at signalized junctions,3,131,False,ambas clases
+val,43/012,3,1,2,240,a vehicle crosses the road,16,176,False,ambas clases
+val,43/016,2,1,1,105,a vehicle turns left across path at signalized junctions,9,41,False,ambas clases
+val,43/019,1,1,0,92,a vehicle goes straight crossing paths at non-signalized junctions,12,12,False,solo positivos
+val,43/045,2,1,1,125,lead vehicle stops,13,61,False,ambas clases
+val,43/057,3,1,2,190,a vehicle backes up into another vehicle,14,126,False,ambas clases
+val,43/066,2,1,1,144,a vehicle changes lanes with the same direction to ego-car/another vehicle,16,80,False,ambas clases
+val,43/081,2,1,1,157,a vehicle turns left across path at signalized junctions,13,93,False,ambas clases
+val,43/088,3,1,2,187,a vehicle backes up into another vehicle,11,123,False,ambas clases
+val,43/090,3,1,2,214,lead vehicle stops,6,134,False,ambas clases
+val,43/105,3,1,2,280,a vehicle crosses the road,8,168,False,ambas clases
+val,43/133,3,1,2,214,a vehicle changes lanes with the same direction to ego-car/another vehicle,6,150,False,ambas clases
+val,43/135,2,1,1,165,a vehicle turns left across path at non-signalized junctions,5,101,False,ambas clases
+val,43/151,3,1,2,192,a vehicle crosses the road,16,128,False,ambas clases
+val,43/162,2,1,1,128,a vehicle changes lanes with the same direction to ego-car/another vehicle,16,64,False,ambas clases
+val,43/174,2,1,1,160,a vehicle turns left across path at signalized junctions,16,96,False,ambas clases
+val,43/180,3,2,1,145,lead vehicle stops,1,81,False,ambas clases
+val,43/182,3,2,1,100,a vehicle crosses the road,4,36,False,ambas clases
+val,43/206,2,1,1,128,a vehicle is out of control,16,64,False,ambas clases
+val,44/001,3,1,2,224,a vehicle is out of control,16,160,False,ambas clases
+val,44/003,2,1,1,160,a vehicle is out of control,16,96,False,ambas clases
+val,45/001,2,1,1,140,a motorbike crosses the road,12,76,False,ambas clases
+val,48/001,2,1,1,170,a vehicle turns left across path at signalized junctions,10,106,False,ambas clases
+val,48/006,3,1,2,272,a vehicle changes lanes with the same direction to ego-car/another vehicle,16,176,False,ambas clases
+val,48/007,2,1,1,155,a vehicle crosses the road,11,91,False,ambas clases
+val,48/012,3,1,2,442,a vehicle changes lanes with the same direction to ego-car/another vehicle,10,154,False,ambas clases
+val,48/023,2,1,1,138,a vehicle changes lanes with the same direction to ego-car/another vehicle,10,74,False,ambas clases
+val,48/026,4,2,2,260,lead vehicle stops,4,180,False,ambas clases
+val,48/039,3,1,2,236,lead vehicle stops,12,140,False,ambas clases
+val,48/043,3,2,1,178,a vehicle turns left across path at signalized junctions,2,114,False,ambas clases
+val,48/045,2,1,1,140,a vehicle changes lanes with the same direction to ego-car/another vehicle,12,76,False,ambas clases
+val,48/048,2,1,1,166,lead vehicle stops,6,102,False,ambas clases
+val,48/051,2,1,1,140,lead vehicle stops,12,76,False,ambas clases
+val,48/054,3,1,2,270,a vehicle turns right across path at non-signalized junctions,14,126,False,ambas clases
+val,48/058,3,2,1,180,a vehicle changes lanes with the same direction to ego-car/another vehicle,4,116,False,ambas clases
+val,48/059,3,1,2,203,a vehicle changes lanes with the same direction to ego-car/another vehicle,11,139,False,ambas clases
+val,48/060,4,2,2,210,a vehicle changes lanes with the same direction to ego-car/another vehicle,2,146,False,ambas clases
+val,48/064,2,1,1,150,a vehicle changes lanes with the same direction to ego-car/another vehicle,6,86,False,ambas clases
+val,48/068,2,1,1,117,a vehicle changes lanes with the same direction to ego-car/another vehicle,5,53,False,ambas clases
+val,48/069,3,1,2,245,a vehicle changes lanes with the same direction to ego-car/another vehicle,5,149,False,ambas clases
+val,48/071,2,1,1,168,a vehicle turns right across path at non-signalized junctions,8,104,False,ambas clases
+val,48/074,3,1,2,202,lead vehicle stops,10,138,False,ambas clases
+val,49/009,2,1,1,166,a vehicle changes lanes with the same direction to ego-car/another vehicle,6,102,False,ambas clases
+val,49/018,2,0,2,0,a vehicle changes lanes with the same direction to ego-car/another vehicle,-256,-128,True,solo negativos
+val,49/021,3,1,2,232,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,152,False,ambas clases
+val,49/024,2,1,1,172,a vehicle changes lanes with the same direction to ego-car/another vehicle,12,108,False,ambas clases
+val,49/027,4,2,2,195,a vehicle changes lanes with the same direction to ego-car/another vehicle,3,131,False,ambas clases
+val,49/030,2,1,1,168,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,104,False,ambas clases
+val,49/035,2,1,1,112,a vehicle changes lanes with the same direction to ego-car/another vehicle,16,48,False,ambas clases
+val,49/036,2,1,1,125,a vehicle changes lanes with the same direction to ego-car/another vehicle,13,61,False,ambas clases
+val,5/002,2,1,1,175,a motorbike crosses the road,15,111,False,ambas clases
+val,5/003,2,1,1,165,a motorbike crosses the road,5,101,False,ambas clases
+val,5/006,3,1,2,216,a motorbike crosses the road,8,152,False,ambas clases
+val,5/007,3,1,2,235,a motorbike crosses the road,11,171,False,ambas clases
+val,5/016,3,1,2,190,a motorbike crosses the road,14,126,False,ambas clases
+val,5/020,3,1,2,350,a motorbike crosses the road,14,158,False,ambas clases
+val,5/025,3,1,2,224,a motorbike crosses the road,16,144,False,ambas clases
+val,5/033,2,1,1,171,a motorbike crosses the road,11,107,False,ambas clases
+val,5/037,4,2,2,194,a motorbike crosses the road,2,130,False,ambas clases
+val,5/041,3,2,1,163,a motorbike crosses the road,3,99,False,ambas clases
+val,5/044,2,1,1,144,a motorbike crosses the road,16,80,False,ambas clases
+val,5/048,3,1,2,246,a motorbike crosses the road,6,166,False,ambas clases
+val,5/052,2,1,1,121,a motorbike crosses the road,9,57,False,ambas clases
+val,5/054,3,1,2,374,a motorbike crosses the road,6,166,False,ambas clases
+val,5/056,3,1,2,396,a motorbike crosses the road,12,124,False,ambas clases
+val,5/060,2,1,1,135,a motorbike crosses the road,7,71,False,ambas clases
+val,5/068,3,1,2,277,a motorbike crosses the road,5,165,False,ambas clases
+val,5/078,3,2,1,145,a motorbike crosses the road,1,81,False,ambas clases
+val,5/079,3,2,1,114,a motorbike crosses the road,2,50,False,ambas clases
+val,5/095,3,1,2,409,a motorbike crosses the road,9,153,False,ambas clases
+val,5/097,3,2,1,146,a motorbike crosses the road,2,82,False,ambas clases
+val,5/106,3,2,1,163,a motorbike crosses the road,3,99,False,ambas clases
+val,5/109,2,1,1,127,a motorbike crosses the road,15,63,False,ambas clases
+val,5/121,2,1,1,168,a motorbike crosses the road,8,104,False,ambas clases
+val,5/137,3,2,1,147,a motorbike crosses the road,3,83,False,ambas clases
+val,5/139,3,2,1,148,a motorbike crosses the road,4,84,False,ambas clases
+val,5/142,3,1,2,265,a motorbike crosses the road,9,153,False,ambas clases
+val,5/148,3,1,2,346,a motorbike crosses the road,10,138,False,ambas clases
+val,5/151,3,2,1,113,a motorbike crosses the road,1,49,False,ambas clases
+val,50/003,3,1,2,238,a vehicle turns left across path at signalized junctions,14,174,False,ambas clases
+val,50/013,3,1,2,360,a motorbike changes lines into motorway,8,168,False,ambas clases
+val,50/014,2,1,1,110,a motorbike crosses the road,14,46,False,ambas clases
+val,50/059,3,1,2,286,a vehicle crosses the road,14,158,False,ambas clases
+val,50/062,3,2,1,178,a vehicle goes straight crossing paths at non-signalized junctions,2,114,False,ambas clases
+val,50/063,3,1,2,200,a vehicle changes lanes with the same direction to ego-car/another vehicle,8,136,False,ambas clases
+val,50/065,2,1,1,102,a motorbike crosses the road,6,38,False,ambas clases
+val,50/070,2,1,1,168,a motorbike crosses the road,8,104,False,ambas clases
+val,50/127,3,1,2,184,a motorbike runs red light,8,120,False,ambas clases
+val,50/131,2,1,1,152,lead vehicle stops,8,88,False,ambas clases
+val,50/132,2,1,1,126,a motorbike changes lines into motorway,14,62,False,ambas clases
+val,50/139,2,1,1,151,a vehicle turns right across path at non-signalized junctions,7,87,False,ambas clases
+val,50/141,3,1,2,298,a motorbike runs red light,10,138,False,ambas clases
+val,50/150,2,1,1,125,a motorbike changes lines into motorway,13,61,False,ambas clases
+val,50/152,2,1,1,118,a motorbike crosses the road,6,54,False,ambas clases
+val,50/158,4,2,2,212,a motorbike crosses the road,4,148,False,ambas clases
+val,50/162,3,1,2,200,a motorbike runs red light,8,136,False,ambas clases
+val,50/172,3,1,2,222,a motorbike crosses the road,14,158,False,ambas clases
+val,50/177,4,2,2,228,a vehicle turns right across path at signalized junctions,4,164,False,ambas clases
+val,50/182,3,1,2,252,a vehicle runs red light,12,172,False,ambas clases
+val,51/017,2,1,1,121,a motorbike changes lines into motorway,9,57,False,ambas clases
+val,52/001,2,1,1,153,a pedestrian crosses the road,9,89,False,ambas clases
+val,52/004,2,1,1,139,a pedestrian crosses the road,11,75,False,ambas clases
+val,52/010,3,2,1,99,a pedestrian crosses the road,3,35,False,ambas clases
+val,52/011,2,1,1,157,a pedestrian crosses the road,13,93,False,ambas clases
+val,56/003,2,1,1,106,a vehicle turns right across path at non-signalized junctions,10,42,False,ambas clases
+val,56/027,3,2,1,114,a pedestrian crosses the road,2,50,False,ambas clases
+val,57/001,3,1,2,248,a cyclist changes lines into motorway,8,152,False,ambas clases
+val,57/010,1,1,0,91,a vehicle  goes straight at signalized junctions,11,11,False,solo positivos
+val,57/011,3,1,2,181,lead cyclist stops,5,117,False,ambas clases
+val,57/018,1,1,0,92,a cyclist crosses the road,12,12,False,solo positivos
+val,57/034,2,1,1,149,a cyclist crosses the road,5,85,False,ambas clases
+val,57/038,4,2,2,260,a cyclist changes lines into motorway,4,180,False,ambas clases
+val,58/001,2,1,1,124,a pedestrian crosses the road,12,60,False,ambas clases
+val,59/001,2,1,1,108,a cyclist turns right across path at signalized junctions,12,44,False,ambas clases
+val,59/005,2,1,1,168,a cyclist is out of control,8,104,False,ambas clases
+val,59/008,2,1,1,136,a cyclist is out of control,8,72,False,ambas clases
+val,59/010,3,1,2,470,a cyclist is out of control,6,150,False,ambas clases
+val,59/013,3,1,2,199,a cyclist is out of control,7,135,False,ambas clases
+val,59/014,3,2,1,97,a cyclist is out of control,1,33,False,ambas clases
+val,59/016,2,1,1,174,a cyclist is out of control,14,110,False,ambas clases
+val,6/004,2,1,1,108,ego-car turns left across path at non-signalized junctions,12,44,False,ambas clases
+val,6/019,3,1,2,214,ego-car dodges the motorbike,6,134,False,ambas clases
+val,6/021,3,1,2,318,ego-car  turns right across path at non-signalized junctions,14,126,False,ambas clases
+val,6/022,2,1,1,172,a motorbike turns right across path at non-signalized junctions,12,108,False,ambas clases
+val,6/027,4,2,2,242,ego-car turns left across path at signalized junctions,2,178,False,ambas clases
+val,6/032,1,1,0,90,lead motorcycle stops,10,10,False,solo positivos
+val,6/038,4,2,2,275,ego-car  turns right across path at non-signalized junctions,3,179,False,ambas clases
+val,6/054,2,1,1,128,ego-car turns left across path at non-signalized junctions,16,64,False,ambas clases
+val,6/068,4,2,2,212,lead motorcycle stops,4,132,False,ambas clases
+val,6/096,3,1,2,204,a motorbike turns left across path at non-signalized junctions,12,124,False,ambas clases
+val,6/097,3,1,2,298,lead motorcycle stops,10,122,False,ambas clases
+val,6/100,3,1,2,272,ego-car turns left across path at non-signalized junctions,16,176,False,ambas clases
+val,6/117,3,1,2,255,a motorbike is out of control,15,175,False,ambas clases
+val,61/005,3,1,2,230,ego-car is out of control,6,166,False,ambas clases
+val,61/014,4,2,2,243,ego-car is out of control,3,179,False,ambas clases
+val,61/016,3,1,2,205,ego-car is out of control,13,141,False,ambas clases
+val,7/003,3,1,2,264,a vehicle turns left across path at non-signalized junctions,8,152,False,ambas clases
+val,8/010,3,1,2,315,ego-car drives away from the road edge,11,171,False,ambas clases
+val,8/034,2,0,2,0,a vehicle is out of control,-256,-64,True,solo negativos
+val,8/039,3,1,2,245,lead vehicle stops,5,165,False,ambas clases
+val,8/043,3,1,2,360,a vehicle backes up into another vehicle,8,168,False,ambas clases
+val,8/047,2,0,2,0,ego-car changes lanes,-128,-64,True,solo negativos
+val,8/051,4,2,2,260,lead vehicle stops,4,180,False,ambas clases
+val,9/003,3,1,2,250,a vehicle overtakes,10,154,False,ambas clases
+val,9/004,3,2,1,178,a vehicle overtakes,2,114,False,ambas clases
+val,9/005,3,1,2,380,a vehicle overtakes,12,172,False,ambas clases
+val,9/008,3,1,2,539,a vehicle overtakes,11,139,False,ambas clases
+val,9/009,3,1,2,220,a vehicle overtakes,12,140,False,ambas clases
+val,9/010,3,2,1,178,a vehicle overtakes,2,114,False,ambas clases
+val,9/011,3,1,2,230,a vehicle overtakes,6,166,False,ambas clases
+val,9/013,3,1,2,253,a vehicle overtakes,13,141,False,ambas clases

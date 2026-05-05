@@ -1,0 +1,6 @@
+check,n,%
+vídeos con TOA válido en Excel,1945,100.0%
+permiten generar positivos (TOA >= 65),1718,88.3%
+permiten negativos sin rescate (TOA >= 165),977,50.2%
+activan el mecanismo de rescate (gray_zone reducida),741,38.1%
+demasiado cortos para cualquier muestra (TOA < 65),227,11.7%

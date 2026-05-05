@@ -74,7 +74,7 @@ class AccidentClipDataset(Dataset):
                     "text": text.strip(),
                 }
 
-                # Si estamos en anticipación, redefinimos el final efectivo
+                # Si esta en anticipación, redefine el final efectivo
                 if self.anticipation_mode and sample["label"] == 1:
                     effective_end = min(sample["end"], sample["toa"] - self.anticipation_offset)
                 else:
@@ -82,10 +82,27 @@ class AccidentClipDataset(Dataset):
 
                 sample["effective_end"] = effective_end
 
-                # Filtrar muestras inválidas
+                # Filtrar muestras inválidas: ventana invertida
                 if self.drop_invalid_samples and effective_end < sample["start"]:
                     discarded_counts[sample["label"]] += 1
                     continue
+
+                # Garantiza end < TOA para muestras pre-TOA
+                if sample["toa"] > 0 and sample["end"] >= sample["toa"]:
+                    raise ValueError(
+                        f"Muestra inválida en {self.txt_path.name}: "
+                        f"video_id={sample['video_id']}, label={sample['label']}, "
+                        f"start={sample['start']}, end={sample['end']}, toa={sample['toa']}. "
+                        f"Se esperaba end < TOA (régimen estricto de anticipación)."
+                    )
+
+                if self.anticipation_mode and sample["toa"] > 0:
+                    if effective_end >= sample["toa"] - self.anticipation_offset + 1:
+                        raise ValueError(
+                            f"effective_end={effective_end} no respeta anticipation_offset="
+                            f"{self.anticipation_offset} para video_id={sample['video_id']} "
+                            f"(toa={sample['toa']})."
+                        )
 
                 samples.append(sample)
 

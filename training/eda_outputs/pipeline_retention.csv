@@ -1,0 +1,6 @@
+paso,vídeos,muestras,comentario
+1. Excel original,1962,—,Anotaciones originales DADA2000
+2. Con accidente y TOA>0,1945,—,Filtra 0 vídeos con TOA inválido o ausente
+3. Sin accidente,17,—,Negativos absolutos potenciales
+4. training_full.txt,1779,1795,1762 pos / 33 neg (33 absolutos)
+5. training_train+val.txt,1387,3789,1707 pos / 2082 neg
