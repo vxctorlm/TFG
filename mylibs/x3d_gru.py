@@ -27,7 +27,7 @@ class TemporalAttentionPooling(nn.Module):
 
 class X3DGRU(nn.Module):
     """
-    X3D-S + GRU + attention.
+    X3D-S + (optional) GRU + attention.
 
     Expected input from AccidentClipDataset:
         x: [B, T, C, H, W]
@@ -37,7 +37,7 @@ class X3DGRU(nn.Module):
         -> sliding subclips [B, S, L, C, H, W]
         -> X3D feature extractor per subclip
         -> [B, S, D]
-        -> GRU + temporal attention
+        -> (optional GRU) + temporal attention
         -> logits [B, num_classes]
 
     Recommended for X3D-S:
@@ -45,6 +45,12 @@ class X3DGRU(nn.Module):
         num_frames = 16 or 32
         subclip_len = 13
         subclip_stride = 1 for T=16, 3-6 for T=32/64
+
+    Args:
+        use_gru: if True (default), uses GRU + residual + attention pooling over
+            subclip features. If False, skips the GRU entirely and runs
+            attention pooling directly on the projected backbone features.
+            Set to False as an ablation/control to measure GRU contribution.
     """
 
     def __init__(
@@ -61,6 +67,7 @@ class X3DGRU(nn.Module):
         bidirectional=True,
         freeze_backbone=True,
         unfreeze_last_n_blocks=1,
+        use_gru=True,
         use_aux_heads=False,
         num_types=61,
         num_weather=4,
@@ -75,6 +82,7 @@ class X3DGRU(nn.Module):
         self.subclip_stride = subclip_stride
         self.freeze_backbone = freeze_backbone
         self.unfreeze_last_n_blocks = unfreeze_last_n_blocks
+        self.use_gru = use_gru
 
         # Requires: pip install pytorchvideo
         x3d = torch.hub.load(
@@ -107,69 +115,77 @@ class X3DGRU(nn.Module):
             nn.Dropout(dropout),
         )
 
-        self.gru = nn.GRU(
-            input_size=d_model,
-            hidden_size=gru_hidden,
-            num_layers=gru_layers,
-            batch_first=True,
-            dropout=dropout if gru_layers > 1 else 0.0,
-            bidirectional=bidirectional,
-        )
+        if self.use_gru:
+            self.gru = nn.GRU(
+                input_size=d_model,
+                hidden_size=gru_hidden,
+                num_layers=gru_layers,
+                batch_first=True,
+                dropout=dropout if gru_layers > 1 else 0.0,
+                bidirectional=bidirectional,
+            )
+            temporal_dim = gru_hidden * 2 if bidirectional else gru_hidden
 
-        gru_out_dim = gru_hidden * 2 if bidirectional else gru_hidden
+            self.residual_proj = (
+                nn.Identity() if temporal_dim == d_model
+                else nn.Linear(d_model, temporal_dim)
+            )
+        else:
+            # Sin GRU: la dimensión temporal coincide con d_model y no hay residual.
+            self.gru = None
+            self.residual_proj = None
+            temporal_dim = d_model
 
-        self.residual_proj = (
-            nn.Identity() if gru_out_dim == d_model else nn.Linear(d_model, gru_out_dim)
-        )
-        self.temporal_norm = nn.LayerNorm(gru_out_dim)
+        self.temporal_dim = temporal_dim
+        self.temporal_norm = nn.LayerNorm(temporal_dim)
         self.temporal_dropout = nn.Dropout(dropout)
 
         self.pool = TemporalAttentionPooling(
-            dim=gru_out_dim,
-            attn_hidden=max(32, gru_out_dim // 2),
+            dim=temporal_dim,
+            attn_hidden=max(32, temporal_dim // 2),
             dropout=0.2,
         )
 
         self.classifier = nn.Sequential(
-            nn.LayerNorm(gru_out_dim),
+            nn.LayerNorm(temporal_dim),
             nn.Dropout(dropout),
-            nn.Linear(gru_out_dim, gru_out_dim // 2),
+            nn.Linear(temporal_dim, temporal_dim // 2),
             nn.GELU(),
             nn.Dropout(dropout),
-            nn.Linear(gru_out_dim // 2, num_classes),
+            nn.Linear(temporal_dim // 2, num_classes),
         )
 
         self.use_aux_heads = use_aux_heads
 
         if self.use_aux_heads:
             self.type_head = nn.Sequential(
-                nn.LayerNorm(gru_out_dim),
+                nn.LayerNorm(temporal_dim),
                 nn.Dropout(dropout),
-                nn.Linear(gru_out_dim, num_types),
+                nn.Linear(temporal_dim, num_types),
             )
 
             self.weather_head = nn.Sequential(
-                nn.LayerNorm(gru_out_dim),
+                nn.LayerNorm(temporal_dim),
                 nn.Dropout(dropout),
-                nn.Linear(gru_out_dim, num_weather),
+                nn.Linear(temporal_dim, num_weather),
             )
 
             self.light_head = nn.Sequential(
-                nn.LayerNorm(gru_out_dim),
+                nn.LayerNorm(temporal_dim),
                 nn.Dropout(dropout),
-                nn.Linear(gru_out_dim, num_light),
+                nn.Linear(temporal_dim, num_light),
             )
 
             self.scene_head = nn.Sequential(
-                nn.LayerNorm(gru_out_dim),
+                nn.LayerNorm(temporal_dim),
                 nn.Dropout(dropout),
-                nn.Linear(gru_out_dim, num_scenes),
+                nn.Linear(temporal_dim, num_scenes),
             )
 
             self.linear_head = nn.Sequential(
-                nn.LayerNorm(gru_out_dim),
+                nn.LayerNorm(temporal_dim),
                 nn.Dropout(dropout),
-                nn.Linear(gru_out_dim, num_linear),
+                nn.Linear(temporal_dim, num_linear),
             )
 
     @torch.no_grad()
@@ -250,9 +266,14 @@ class X3DGRU(nn.Module):
         feats = self.proj(feats)
         feats = feats.reshape(b, s, -1)  # [B, S, d_model]
 
-        gru_out, _ = self.gru(feats)
-        residual = self.residual_proj(feats)
-        temporal = self.temporal_norm(gru_out + residual)
+        if self.use_gru:
+            gru_out, _ = self.gru(feats)
+            residual = self.residual_proj(feats)
+            temporal = self.temporal_norm(gru_out + residual)
+        else:
+            # Control sin GRU: solo norm + dropout sobre features proyectadas
+            temporal = self.temporal_norm(feats)
+
         temporal = self.temporal_dropout(temporal)
 
         pooled, attn_weights = self.pool(temporal)

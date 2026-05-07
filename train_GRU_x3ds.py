@@ -372,7 +372,7 @@ def main():
 
     batch_size = 16
     num_epochs = 100
-    num_frames = 16
+    num_frames = 32
     image_size = (160, 160)
 
     pretrained = True
@@ -397,10 +397,10 @@ def main():
     use_color_jitter = True
     use_random_resized_crop = True
     use_gaussian_blur = True
-    use_random_erasing = True
+    use_random_erasing = False
 
     use_temporal_augmentation = True
-    temporal_max_jitter = 3
+    temporal_max_jitter = 2
     use_toa_guided_sampling = False
     toa_center_strength = 0.0
 
@@ -410,26 +410,28 @@ def main():
     dropout = 0.5
     bidirectional = True
 
-    use_mixup = True
+    use_mixup = False
     mixup_alpha = 0.2
-    mixup_prob = 0.5
+    mixup_prob = 0.3
 
     label_smoothing = 0.05
     use_weighted_sampler = False
     class_weights = None
 
-    weight_decay = 5e-4
+    weight_decay = 1e-3
     run_val_sanity_check = True
 
-    patience = 8
+    patience = 10
     min_delta = 0.001
     early_stop_counter = 0
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     frames_tag = "allf" if num_frames is None else f"{num_frames}f"
 
+    use_gru = True
+
     run_name = (
-        f"x3ds_gru_v1_{timestamp}_{frames_tag}_seed{seed}"
+        f"x3ds_{use_gru}_v1_{timestamp}_{frames_tag}_seed{seed}"
         f"_freezeBackbone{int(freeze_backbone)}_unfreezeLast{unfreeze_last_n_blocks}"
         f"_lrHead{learning_rate_head:.0e}_lrBackbone{learning_rate_backbone:.0e}"
         f"_wd{weight_decay:.0e}"
@@ -716,6 +718,7 @@ def main():
         bidirectional=bidirectional,
         freeze_backbone=freeze_backbone,
         unfreeze_last_n_blocks=unfreeze_last_n_blocks,
+        use_gru=use_gru,
         use_aux_heads=use_aux_annotations,
         num_types=62,
         num_weather=4,
@@ -1115,6 +1118,7 @@ def main():
                 "lambda_light": lambda_light,
                 "lambda_scene": lambda_scene,
                 "lambda_linear": lambda_linear,
+                "use_gru": use_gru,
             }, ckpt_path)
 
             print(f"Nuevo mejor modelo guardado en: {ckpt_path}")
